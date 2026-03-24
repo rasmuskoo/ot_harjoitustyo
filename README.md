@@ -1,5 +1,10 @@
 # Ohjelmistotekniikka, harjoitustyö
 
+## Harjoitustyö
+
+- [tyoaikakirjanpito](dokumentaatio/tyoaikakirjanpito.md)
+- [vaatimusmaarittely](dokumentaatio/vaatimusmaarittely.md)
+
 ## Tehtävät
 
 ### Viikko 2
