@@ -1,3 +1,5 @@
+"""Database setup and connection helpers."""
+
 from pathlib import Path
 import sqlite3
 
@@ -13,6 +15,7 @@ def get_database_connection() -> sqlite3.Connection:
 
 
 def initialize_database() -> None:
+    """Create required database tables if they do not exist."""
     with get_database_connection() as connection:
         connection.execute(
             """
@@ -23,6 +26,31 @@ def initialize_database() -> None:
                 email TEXT NOT NULL UNIQUE,
                 password_hash TEXT NOT NULL,
                 created_at TEXT NOT NULL
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS tasks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                description TEXT NOT NULL,
+                importance INTEGER NOT NULL DEFAULT 0,
+                due_date TEXT,
+                created_by_user_id INTEGER NOT NULL,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY (created_by_user_id) REFERENCES users(id)
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS task_participants (
+                task_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                PRIMARY KEY (task_id, user_id),
+                FOREIGN KEY (task_id) REFERENCES tasks(id),
+                FOREIGN KEY (user_id) REFERENCES users(id)
             )
             """
         )
