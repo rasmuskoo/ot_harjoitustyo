@@ -22,7 +22,7 @@
 ### Tietokanta
 
 - SQLite-tietokanta luodaan automaattisesti hakemistoon `data/taskboard.db`.
-- `users`-taulu luodaan sovelluksen käynnistyksen yhteydessä.
+- `users`, `tasks` ja `task_participants` -taulut luodaan sovelluksen käynnistyksen yhteydessä.
 
 ## Tehtävät
 
