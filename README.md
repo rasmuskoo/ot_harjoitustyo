@@ -2,24 +2,27 @@
 
 ## TaskBoard Desktop
 
-### Dokumentaatio
+TaskBoard on Pythonilla toteutettu työpöytäsovellus tehtävien hallintaan.
 
-- [tyoaikakirjanpito](dokumentaatio/tyoaikakirjanpito.md)
+## Dokumentaatio
+
 - [vaatimusmaarittely](dokumentaatio/vaatimusmaarittely.md)
+- [tyoaikakirjanpito](dokumentaatio/tyoaikakirjanpito.md)
+- [changelog](dokumentaatio/changelog.md)
 
-### Asennus
+## Asennus
 
 Asenna riippuvuudet komennolla:
 
 `poetry install`
 
-### Sovelluksen käynnistys
+## Sovelluksen käynnistys
 
 Käynnistä sovellus komennolla:
 
 `poetry run invoke start`
 
-### Komentorivitoiminnot
+## Komentorivitoiminnot
 
 Ohjelman suorittaminen:
 
@@ -34,18 +37,3 @@ Testikattavuusraportti:
 `poetry run invoke coverage-report`
 
 Raportti generoituu `htmlcov`-hakemistoon.
-
-### Tietokanta
-
-- SQLite-tietokanta luodaan automaattisesti hakemistoon `data/taskboard.db`.
-- `users`, `tasks` ja `task_participants` -taulut luodaan sovelluksen käynnistyksen yhteydessä.
-
-## Tehtävät
-
-### Viikko 2
-
-- [poetry.lock](laskarit/viikko2/maksukortti/poetry.lock)
-- [pyproject.toml](laskarit/viikko2/maksukortti/pyproject.toml)
-- [maksukortti.py](laskarit/viikko2/maksukortti/src/maksukortti.py)
-- [__init__.py](laskarit/viikko2/maksukortti/tests/__init__.py)
-- [maksukortti_test.py](laskarit/viikko2/maksukortti/tests/maksukortti_test.py)
