@@ -4,6 +4,7 @@ from src.repositories.database import initialize_database
 from src.repositories.task_repository import TaskRepository
 from src.services.auth_service import AuthService
 from src.services.session_service import SessionService
+from src.services.task_service import TaskService
 from src.ui.home_view import HomeView
 from src.ui.sign_in_view import SignInView
 from src.ui.sign_up_view import SignUpView
@@ -16,10 +17,11 @@ def main() -> None:
     auth_service = AuthService()
     session_service = SessionService()
     task_repository = TaskRepository()
+    task_service = TaskService(task_repository)
 
     sign_up_view = SignUpView(auth_service)
     sign_in_view = SignInView(auth_service, session_service, sign_up_view)
-    home_view = HomeView(session_service, task_repository)
+    home_view = HomeView(session_service, task_repository, task_service)
 
     while True:
         sign_in_view.run()

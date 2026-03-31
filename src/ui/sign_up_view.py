@@ -16,11 +16,11 @@ class SignUpView:
         """Run one sign-up flow in the terminal."""
         print("TaskBoard - Create Account")
 
-        first_name = input("First name: ")
-        last_name = input("Last name: ")
-        email = input("Email: ")
-        password = getpass("Password: ")
-        confirm_password = getpass("Confirm password: ")
+        first_name = self._prompt("First name: ")
+        last_name = self._prompt("Last name: ")
+        email = self._prompt("Email: ")
+        password = self._prompt_secret("Password: ")
+        confirm_password = self._prompt_secret("Confirm password: ")
 
         try:
             user = self._auth_service.register(
@@ -33,3 +33,17 @@ class SignUpView:
             print(f"Account created for {user.first_name} {user.last_name} ({user.email}).")
         except RegistrationError as error:
             print(f"Registration failed: {error}")
+
+    def _prompt(self, label: str) -> str:
+        """Show a flushed prompt and read one input line."""
+        print(label, end="", flush=True)
+        return input()
+
+    def _prompt_secret(self, label: str) -> str:
+        """Read hidden input when possible, fallback to visible input."""
+        try:
+            return getpass(label)
+        except (EOFError, KeyboardInterrupt):
+            raise
+        except Exception:
+            return self._prompt(label)

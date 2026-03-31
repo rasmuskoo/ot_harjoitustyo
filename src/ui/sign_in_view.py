@@ -27,15 +27,29 @@ class SignInView:
             print("\nTaskBoard - Sign In")
             print("Type 'register' to create a new user account.")
 
-            email = input("Email: ").strip()
+            email = self._prompt("Email: ").strip()
             if email.lower() == "register":
                 self._sign_up_view.run()
                 continue
 
-            password = getpass("Password: ")
+            password = self._prompt_secret("Password: ")
             try:
                 user = self._auth_service.sign_in(email=email, password=password)
                 self._session_service.sign_in_user(user)
                 print(f"Signed in as {user.first_name} {user.last_name}.")
             except AuthenticationError as error:
                 print(f"Sign in failed: {error}")
+
+    def _prompt(self, label: str) -> str:
+        """Show a flushed prompt and read one input line."""
+        print(label, end="", flush=True)
+        return input()
+
+    def _prompt_secret(self, label: str) -> str:
+        """Read hidden input when possible, fallback to visible input."""
+        try:
+            return getpass(label)
+        except (EOFError, KeyboardInterrupt):
+            raise
+        except Exception:
+            return self._prompt(label)

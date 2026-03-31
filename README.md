@@ -9,15 +9,31 @@
 
 ### Asennus
 
-1. Siirry projektin juureen:
-   - `cd /Users/rasmus/HY/Ohjelmistotuotanto/ot_harjoitustyo`
-2. Asenna riippuvuudet Poetrylla:
-   - `poetry install`
+Asenna riippuvuudet komennolla:
+
+`poetry install`
 
 ### Sovelluksen käynnistys
 
-- Käynnistä sovellus komennolla:
-  - `poetry run python -m src.main`
+Käynnistä sovellus komennolla:
+
+`poetry run invoke start`
+
+### Komentorivitoiminnot
+
+Ohjelman suorittaminen:
+
+`poetry run invoke start`
+
+Testaus:
+
+`poetry run invoke test`
+
+Testikattavuusraportti:
+
+`poetry run invoke coverage-report`
+
+Raportti generoituu `htmlcov`-hakemistoon.
 
 ### Tietokanta
 

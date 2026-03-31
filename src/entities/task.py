@@ -9,8 +9,6 @@ class Task:
 
     title: str
     description: str
-    importance: int
-    due_date: str | None
     created_by_user_id: int
     created_at: str
     id: int | None = None

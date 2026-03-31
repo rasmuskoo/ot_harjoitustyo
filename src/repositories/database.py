@@ -35,8 +35,6 @@ def initialize_database() -> None:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
                 description TEXT NOT NULL,
-                importance INTEGER NOT NULL DEFAULT 0,
-                due_date TEXT,
                 created_by_user_id INTEGER NOT NULL,
                 created_at TEXT NOT NULL,
                 FOREIGN KEY (created_by_user_id) REFERENCES users(id)
