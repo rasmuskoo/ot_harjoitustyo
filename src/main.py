@@ -1,9 +1,10 @@
-"""Application entry point for TaskBoard desktop."""
+from src.repositories.database import initialize_database
 
 
 def main() -> None:
     """Start the application."""
-    print("TaskBoard Desktop version is running.")
+    initialize_database()
+    print("TaskBoard Desktop version is running")
 
 
 if __name__ == "__main__":
