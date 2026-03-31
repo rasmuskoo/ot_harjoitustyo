@@ -15,6 +15,10 @@ class RegistrationError(Exception):
     """Raised when user registration validation fails."""
 
 
+class AuthenticationError(Exception):
+    """Raised when sign-in authentication fails."""
+
+
 class AuthService:
     """Handles authentication-related application logic."""
 
@@ -54,6 +58,21 @@ class AuthService:
             created_at=datetime.now(timezone.utc).isoformat(),
         )
         return self._user_repository.create_user(user)
+
+    def sign_in(self, email: str, password: str) -> User:
+        """Authenticate user by email and password and return the user."""
+        normalized_email = email.strip().lower()
+        if not normalized_email or not password:
+            raise AuthenticationError("Email and password are required.")
+
+        user = self._user_repository.find_by_email(normalized_email)
+        if user is None:
+            raise AuthenticationError("Invalid email or password.")
+
+        if not self._verify_password(password, user.password_hash):
+            raise AuthenticationError("Invalid email or password.")
+
+        return user
 
     def _validate_required_fields(
         self,
@@ -103,3 +122,18 @@ class AuthService:
             100_000,
         ).hex()
         return f"{salt}${hashed_password}"
+
+    def _verify_password(self, password: str, stored_hash: str) -> bool:
+        """Verify password against the stored salt$hash representation."""
+        try:
+            salt, expected_hash = stored_hash.split("$", maxsplit=1)
+        except ValueError:
+            return False
+
+        actual_hash = hashlib.pbkdf2_hmac(
+            "sha256",
+            password.encode("utf-8"),
+            salt.encode("utf-8"),
+            100_000,
+        ).hex()
+        return secrets.compare_digest(actual_hash, expected_hash)
