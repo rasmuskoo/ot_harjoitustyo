@@ -21,16 +21,19 @@ class SignInView:
         self._session_service = session_service
         self._sign_up_view = sign_up_view
 
-    def run(self) -> None:
-        """Run sign-in loop until user is authenticated."""
+    def run(self) -> bool:
+        """Run sign-in loop until user is authenticated or user quits."""
         while not self._session_service.is_authenticated():
             print("\nTaskBoard - Sign In")
             print("Type 'register' to create a new user account.")
+            print("Type 'q' to quit the program.") #Codex generated quit feature
 
             email = self._prompt("Email: ").strip()
             if email.lower() == "register":
                 self._sign_up_view.run()
                 continue
+            if email.lower() == "q":
+                return False
 
             password = self._prompt_secret("Password: ")
             try:
@@ -39,6 +42,7 @@ class SignInView:
                 print(f"Signed in as {user.first_name} {user.last_name}.")
             except AuthenticationError as error:
                 print(f"Sign in failed: {error}")
+        return True
 
     def _prompt(self, label: str) -> str:
         """Show a flushed prompt and read one input line."""

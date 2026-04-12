@@ -16,3 +16,8 @@
 ## Viikko 4
 
 - Lisätty .pylintrc tiedosto
+- Tehtäviä voi nyt muokata
+- Tehtävän voi merkata valmistuneeksi
+- Valmiita tehtäviä voi tarkastella valmiden tehtävien listasta
+- Tehtäviä voi myös poistaa
+- q-kirjain toimii ohjelman pysäyttämiseksi

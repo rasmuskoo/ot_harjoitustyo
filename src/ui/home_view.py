@@ -26,8 +26,8 @@ class HomeView:
         self._task_repository = task_repository
         self._task_service = task_service
 
-    def run(self) -> None:
-        """Run the home view until user signs out."""
+    def run(self) -> bool:
+        """Run the home view until user signs out or quits the program."""
         while self._session_service.is_authenticated():
             user = self._session_service.get_current_user()
             if user is None:
@@ -39,7 +39,10 @@ class HomeView:
             if command == "2":
                 self._session_service.sign_out()
                 print("You have been signed out.")
-                return
+                return True
+
+            if command == "q": #Codex generated
+                return False
 
             if command == "3":
                 self._handle_create_task(user.id)
@@ -63,6 +66,7 @@ class HomeView:
 
             if command != "1":
                 print("Unknown action.")
+        return True
 
     def _render_home(self, first_name: str, last_name: str, user_id: int | None) -> list[Task]:
         """Print user home page with task list and return listed tasks."""
@@ -85,7 +89,7 @@ class HomeView:
 
     def _build_command_prompt(self, tasks: list[Task]) -> str:
         """Build command prompt and return selected command."""
-        options = "1=refresh, 2=sign out, 3=create task, 7=view completed tasks"
+        options = "1=refresh, 2=sign out, 3=create task, 7=view completed tasks, q=quit"
         if tasks:
             options = f"{options}, 4=edit task, 5=complete task, 6=delete task"
         return input(f"Select action ({options}): ").strip()

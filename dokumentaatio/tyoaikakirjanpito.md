@@ -7,3 +7,6 @@
 |  | 1 h | Kirjautuminen ja uloskirjautuminen. |
 |  | 1 h | Tehtävien perustoiminnallisuus: tehtävän luonti (otsikko + kuvaus), osallistujalinkitys ja tehtävälistaus kotinäkymässä. |
 |  | 1 h | Testaus- ja kehitystyökalut: unittest, Invoke-tehtävät, coverage-konfiguraatio, README/changelog/.gitignore-siistintä. |
+| 12.4.2026 | 1h | Pylint laatutarkastaminen |
+|  | 2h | Tehtävien muokkaus- ja poistamisominaisuudet sekä valmiiksi merkitseminen |
+|  | 1h | Ohjelman lopettamisen parantelu lisäämällä q=quit ominaisuus |

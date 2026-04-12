@@ -12,20 +12,30 @@ from src.ui.sign_up_view import SignUpView
 
 def main() -> None:
     """Start the application and run signed-in/signed-out flow."""
-    initialize_database()
+    try:
+        initialize_database()
 
-    auth_service = AuthService()
-    session_service = SessionService()
-    task_repository = TaskRepository()
-    task_service = TaskService(task_repository)
+        auth_service = AuthService()
+        session_service = SessionService()
+        task_repository = TaskRepository()
+        task_service = TaskService(task_repository)
 
-    sign_up_view = SignUpView(auth_service)
-    sign_in_view = SignInView(auth_service, session_service, sign_up_view)
-    home_view = HomeView(session_service, task_repository, task_service)
+        sign_up_view = SignUpView(auth_service)
+        sign_in_view = SignInView(auth_service, session_service, sign_up_view)
+        home_view = HomeView(session_service, task_repository, task_service)
 
-    while True:
-        sign_in_view.run()
-        home_view.run()
+        while True:
+            continue_running = sign_in_view.run()
+            if not continue_running:
+                print("Exiting TaskBoard.") #Codex generated quit feature
+                return
+
+            continue_running = home_view.run()
+            if not continue_running:
+                print("Exiting TaskBoard.") #Codex generated quit feature
+                return
+    except KeyboardInterrupt:
+        print("\nExiting TaskBoard.")
 
 
 if __name__ == "__main__":
