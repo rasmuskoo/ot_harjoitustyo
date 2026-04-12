@@ -54,7 +54,13 @@ class TaskRepository:
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
-                SELECT t.id, t.title, t.description, t.created_by_user_id, t.created_at, t.is_completed
+                SELECT
+                    t.id,
+                    t.title,
+                    t.description,
+                    t.created_by_user_id,
+                    t.created_at,
+                    t.is_completed
                 FROM tasks t
                 INNER JOIN task_participants tp ON tp.task_id = t.id
                 WHERE tp.user_id = ?
@@ -84,7 +90,13 @@ class TaskRepository:
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
-                SELECT t.id, t.title, t.description, t.created_by_user_id, t.created_at, t.is_completed
+                SELECT
+                    t.id,
+                    t.title,
+                    t.description,
+                    t.created_by_user_id,
+                    t.created_at,
+                    t.is_completed
                 FROM tasks t
                 INNER JOIN task_participants tp ON tp.task_id = t.id
                 WHERE tp.user_id = ?
@@ -114,7 +126,13 @@ class TaskRepository:
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
-                SELECT t.id, t.title, t.description, t.created_by_user_id, t.created_at, t.is_completed
+                SELECT
+                    t.id,
+                    t.title,
+                    t.description,
+                    t.created_by_user_id,
+                    t.created_at,
+                    t.is_completed
                 FROM tasks t
                 INNER JOIN task_participants tp ON tp.task_id = t.id
                 WHERE t.id = ? AND tp.user_id = ?
@@ -135,8 +153,14 @@ class TaskRepository:
             is_completed=bool(row[5]),
         )
 
-    def update_task_for_user(self, task_id: int, user_id: int, title: str, description: str) -> bool:
-        """Update a task header and description if the user is a participant."""
+    def update_task_for_user(
+        self,
+        task_id: int,
+        user_id: int,
+        title: str,
+        description: str,
+    ) -> bool:
+        """Update a task header and description if user is a participant."""
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -204,47 +228,3 @@ class TaskRepository:
             )
             connection.commit()
         return delete_cursor.rowcount > 0
-
-    def find_task_for_user(self, task_id: int, user_id: int) -> Task | None:
-        """Return one task if the user is a participant."""
-        with get_database_connection() as connection:
-            cursor = connection.execute(
-                """
-                SELECT t.id, t.title, t.description, t.created_by_user_id, t.created_at
-                FROM tasks t
-                INNER JOIN task_participants tp ON tp.task_id = t.id
-                WHERE t.id = ? AND tp.user_id = ?
-                """,
-                (task_id, user_id),
-            )
-            row = cursor.fetchone()
-
-        if row is None:
-            return None
-
-        return Task(
-            id=row[0],
-            title=row[1],
-            description=row[2],
-            created_by_user_id=row[3],
-            created_at=row[4],
-        )
-
-    def update_task_for_user(self, task_id: int, user_id: int, title: str, description: str) -> bool:
-        """Update a task if the user is a participant."""
-        with get_database_connection() as connection:
-            cursor = connection.execute(
-                """
-                UPDATE tasks
-                SET title = ?, description = ?
-                WHERE id = ?
-                  AND EXISTS (
-                      SELECT 1
-                      FROM task_participants
-                      WHERE task_id = tasks.id AND user_id = ?
-                  )
-                """,
-                (title, description, task_id, user_id),
-            )
-            connection.commit()
-        return cursor.rowcount > 0

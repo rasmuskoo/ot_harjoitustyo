@@ -1,9 +1,8 @@
 """CLI sign-in view for signed-out application state."""
 
-from getpass import getpass
-
 from src.services.auth_service import AuthService, AuthenticationError
 from src.services.session_service import SessionService
+from src.ui.prompt_utils import prompt, prompt_secret
 from src.ui.sign_up_view import SignUpView
 
 
@@ -28,14 +27,14 @@ class SignInView:
             print("Type 'register' to create a new user account.")
             print("Type 'q' to quit the program.") #Codex generated quit feature
 
-            email = self._prompt("Email: ").strip()
+            email = prompt("Email: ").strip()
             if email.lower() == "register":
                 self._sign_up_view.run()
                 continue
             if email.lower() == "q":
                 return False
 
-            password = self._prompt_secret("Password: ")
+            password = prompt_secret("Password: ")
             try:
                 user = self._auth_service.sign_in(email=email, password=password)
                 self._session_service.sign_in_user(user)
@@ -44,16 +43,6 @@ class SignInView:
                 print(f"Sign in failed: {error}")
         return True
 
-    def _prompt(self, label: str) -> str:
-        """Show a flushed prompt and read one input line."""
-        print(label, end="", flush=True)
-        return input()
-
-    def _prompt_secret(self, label: str) -> str:
-        """Read hidden input when possible, fallback to visible input."""
-        try:
-            return getpass(label)
-        except (EOFError, KeyboardInterrupt):
-            raise
-        except Exception:
-            return self._prompt(label)
+    def show(self) -> bool:
+        """Display sign-in view."""
+        return self.run()

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
 import re
@@ -19,6 +20,17 @@ class AuthenticationError(Exception):
     """Raised when sign-in authentication fails."""
 
 
+@dataclass
+class RegistrationInput:
+    """Registration payload for creating a new user account."""
+
+    first_name: str
+    last_name: str
+    email: str
+    password: str
+    confirm_password: str
+
+
 class AuthService:
     """Handles authentication-related application logic."""
 
@@ -26,35 +38,22 @@ class AuthService:
         """Create an auth service with an optional repository dependency."""
         self._user_repository = user_repository or UserRepository()
 
-    def register(
-        self,
-        first_name: str,
-        last_name: str,
-        email: str,
-        password: str,
-        confirm_password: str,
-    ) -> User:
+    def register(self, registration: RegistrationInput) -> User:
         """Validate input, create a new user, and return the stored user."""
-        normalized_first_name = first_name.strip()
-        normalized_last_name = last_name.strip()
-        normalized_email = email.strip().lower()
+        normalized_first_name = registration.first_name.strip()
+        normalized_last_name = registration.last_name.strip()
+        normalized_email = registration.email.strip().lower()
 
-        self._validate_required_fields(
-            normalized_first_name,
-            normalized_last_name,
-            normalized_email,
-            password,
-            confirm_password,
-        )
+        self._validate_required_fields(registration)
         self._validate_email(normalized_email)
-        self._validate_password(password, confirm_password)
+        self._validate_password(registration.password, registration.confirm_password)
         self._validate_unique_email(normalized_email)
 
         user = User(
             first_name=normalized_first_name,
             last_name=normalized_last_name,
             email=normalized_email,
-            password_hash=self._hash_password(password),
+            password_hash=self._hash_password(registration.password),
             created_at=datetime.now(timezone.utc).isoformat(),
         )
         return self._user_repository.create_user(user)
@@ -74,24 +73,17 @@ class AuthService:
 
         return user
 
-    def _validate_required_fields(
-        self,
-        first_name: str,
-        last_name: str,
-        email: str,
-        password: str,
-        confirm_password: str,
-    ) -> None:
+    def _validate_required_fields(self, registration: RegistrationInput) -> None:
         """Ensure all registration fields are present."""
-        if not first_name:
+        if not registration.first_name.strip():
             raise RegistrationError("First name is required.")
-        if not last_name:
+        if not registration.last_name.strip():
             raise RegistrationError("Last name is required.")
-        if not email:
+        if not registration.email.strip():
             raise RegistrationError("Email is required.")
-        if not password:
+        if not registration.password:
             raise RegistrationError("Password is required.")
-        if not confirm_password:
+        if not registration.confirm_password:
             raise RegistrationError("Confirm password is required.")
 
     def _validate_email(self, email: str) -> None:

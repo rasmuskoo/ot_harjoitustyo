@@ -68,6 +68,10 @@ class HomeView:
                 print("Unknown action.")
         return True
 
+    def show(self) -> bool:
+        """Display home view."""
+        return self.run()
+
     def _render_home(self, first_name: str, last_name: str, user_id: int | None) -> list[Task]:
         """Print user home page with task list and return listed tasks."""
         print("\nTaskBoard - Home")
