@@ -3,7 +3,13 @@
 from src.entities.task import Task
 from src.repositories.task_repository import TaskRepository
 from src.services.session_service import SessionService
-from src.services.task_service import TaskCreationError, TaskEditError, TaskService
+from src.services.task_service import (
+    TaskCompleteError,
+    TaskCreationError,
+    TaskDeleteError,
+    TaskEditError,
+    TaskService,
+)
 
 
 class HomeView:
@@ -43,6 +49,18 @@ class HomeView:
                 self._handle_edit_task(user.id, tasks)
                 continue
 
+            if command == "5" and tasks:
+                self._handle_complete_task(user.id, tasks)
+                continue
+
+            if command == "6" and tasks:
+                self._handle_delete_task(user.id, tasks)
+                continue
+
+            if command == "7":
+                self._handle_view_completed_tasks(user.id)
+                continue
+
             if command != "1":
                 print("Unknown action.")
 
@@ -67,9 +85,9 @@ class HomeView:
 
     def _build_command_prompt(self, tasks: list[Task]) -> str:
         """Build command prompt and return selected command."""
-        options = "1=refresh, 2=sign out, 3=create task"
+        options = "1=refresh, 2=sign out, 3=create task, 7=view completed tasks"
         if tasks:
-            options = f"{options}, 4=edit task"
+            options = f"{options}, 4=edit task, 5=complete task, 6=delete task"
         return input(f"Select action ({options}): ").strip()
 
     def _handle_create_task(self, user_id: int | None) -> None:
@@ -94,19 +112,8 @@ class HomeView:
             print("Task edit failed: Signed-in user is required.")
             return
 
-        selection = input("Select task number to edit: ").strip()
-        if not selection.isdigit():
-            print("Task edit failed: Invalid selection.")
-            return
-
-        task_index = int(selection) - 1
-        if task_index < 0 or task_index >= len(tasks):
-            print("Task edit failed: Selection out of range.")
-            return
-
-        selected_task = tasks[task_index]
-        if selected_task.id is None:
-            print("Task edit failed: Selected task has no id.")
+        selected_task = self._select_task(tasks, "edit")
+        if selected_task is None:
             return
 
         new_header = input("New header: ")
@@ -122,3 +129,69 @@ class HomeView:
             print(f"Task updated: {updated_task.title}")
         except TaskEditError as error:
             print(f"Task edit failed: {error}")
+
+    def _handle_complete_task(self, user_id: int | None, tasks: list[Task]) -> None:
+        """Prompt task selection and complete selected task."""
+        if user_id is None:
+            print("Task completion failed: Signed-in user is required.")
+            return
+
+        selected_task = self._select_task(tasks, "complete")
+        if selected_task is None:
+            return
+
+        try:
+            self._task_service.complete_task(task_id=selected_task.id, user_id=user_id)
+            print(f"Task completed: {selected_task.title}")
+        except TaskCompleteError as error:
+            print(f"Task completion failed: {error}")
+
+    def _handle_delete_task(self, user_id: int | None, tasks: list[Task]) -> None:
+        """Prompt task selection and delete selected task."""
+        if user_id is None:
+            print("Task deletion failed: Signed-in user is required.")
+            return
+
+        selected_task = self._select_task(tasks, "delete")
+        if selected_task is None:
+            return
+
+        try:
+            self._task_service.delete_task(task_id=selected_task.id, user_id=user_id)
+            print(f"Task deleted: {selected_task.title}")
+        except TaskDeleteError as error:
+            print(f"Task deletion failed: {error}")
+
+    def _select_task(self, tasks: list[Task], action: str) -> Task | None:
+        """Prompt user to select task number for a given action."""
+        selection = input(f"Select task number to {action}: ").strip()
+        if not selection.isdigit():
+            print(f"Task {action} failed: Invalid selection.")
+            return None
+
+        task_index = int(selection) - 1
+        if task_index < 0 or task_index >= len(tasks):
+            print(f"Task {action} failed: Selection out of range.")
+            return None
+
+        selected_task = tasks[task_index]
+        if selected_task.id is None:
+            print(f"Task {action} failed: Selected task has no id.")
+            return None
+
+        return selected_task
+
+    def _handle_view_completed_tasks(self, user_id: int | None) -> None:
+        """Show completed tasks for signed-in user."""
+        if user_id is None:
+            print("Completed task view failed: Signed-in user is required.")
+            return
+
+        completed_tasks = self._task_repository.list_completed_tasks_for_user(user_id)
+        print("\nCompleted Tasks")
+        if not completed_tasks:
+            print("No completed tasks found for your account.")
+            return
+
+        for index, task in enumerate(completed_tasks, start=1):
+            print(f"{index}. {task.title}: {task.description}")

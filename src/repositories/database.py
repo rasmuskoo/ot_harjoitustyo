@@ -36,6 +36,7 @@ def initialize_database() -> None:
                 title TEXT NOT NULL,
                 description TEXT NOT NULL,
                 created_by_user_id INTEGER NOT NULL,
+                is_completed INTEGER NOT NULL DEFAULT 0,
                 created_at TEXT NOT NULL,
                 FOREIGN KEY (created_by_user_id) REFERENCES users(id)
             )
@@ -52,4 +53,13 @@ def initialize_database() -> None:
             )
             """
         )
+        task_columns = connection.execute("PRAGMA table_info(tasks)").fetchall()
+        column_names = {column[1] for column in task_columns}
+        if "is_completed" not in column_names:
+            connection.execute(
+                """
+                ALTER TABLE tasks
+                ADD COLUMN is_completed INTEGER NOT NULL DEFAULT 0
+                """
+            )
         connection.commit()

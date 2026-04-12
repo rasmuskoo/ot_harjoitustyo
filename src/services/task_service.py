@@ -14,8 +14,16 @@ class TaskEditError(Exception):
     """Raised when task editing validation fails."""
 
 
+class TaskCompleteError(Exception):
+    """Raised when task completion fails."""
+
+
+class TaskDeleteError(Exception):
+    """Raised when task deletion fails."""
+
+
 class TaskService:
-    """Handles task creation and participant linking."""
+    """Handles task creation, update, completion, and deletion."""
 
     def __init__(self, task_repository: TaskRepository | None = None) -> None:
         """Create task service with optional repository dependency."""
@@ -81,3 +89,31 @@ class TaskService:
         if updated_task is None:
             raise TaskEditError("Task was not found after update.")
         return updated_task
+
+    def complete_task(self, task_id: int, user_id: int | None) -> None:
+        """Mark task as completed for a participant user."""
+        if user_id is None:
+            raise TaskCompleteError("Signed-in user is required to complete a task.")
+
+        task = self._task_repository.find_task_for_user(task_id, user_id)
+        if task is None:
+            raise TaskCompleteError("Task was not found for this user.")
+        if task.is_completed:
+            raise TaskCompleteError("Task is already completed.")
+
+        was_completed = self._task_repository.complete_task_for_user(task_id, user_id)
+        if not was_completed:
+            raise TaskCompleteError("Task completion failed.")
+
+    def delete_task(self, task_id: int, user_id: int | None) -> None:
+        """Delete task for a participant user."""
+        if user_id is None:
+            raise TaskDeleteError("Signed-in user is required to delete a task.")
+
+        task = self._task_repository.find_task_for_user(task_id, user_id)
+        if task is None:
+            raise TaskDeleteError("Task was not found for this user.")
+
+        was_deleted = self._task_repository.delete_task_for_user(task_id, user_id)
+        if not was_deleted:
+            raise TaskDeleteError("Task deletion failed.")
