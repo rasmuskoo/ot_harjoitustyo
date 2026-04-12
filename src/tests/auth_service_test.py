@@ -1,7 +1,7 @@
 import unittest
 
 from src.entities.user import User
-from src.services.auth_service import AuthService
+from src.services.auth_service import AuthenticationError, AuthService, RegistrationError
 
 
 class FakeUserRepository:
@@ -48,6 +48,56 @@ class TestAuthService(unittest.TestCase):
         self.assertEqual(registered_user.id, signed_in_user.id)
         self.assertEqual(signed_in_user.email, "ada@example.com")
         self.assertNotEqual(signed_in_user.password_hash, "password123")
+
+    def test_sign_in_with_wrong_password_raises_error(self):
+        self.auth_service.register(
+            first_name="Ada",
+            last_name="Lovelace",
+            email="ada@example.com",
+            password="password123",
+            confirm_password="password123",
+        )
+
+        with self.assertRaises(AuthenticationError):
+            self.auth_service.sign_in(email="ada@example.com", password="wrongpassword")
+
+    def test_register_with_duplicate_email_raises_error(self):
+        self.auth_service.register(
+            first_name="Ada",
+            last_name="Lovelace",
+            email="ada@example.com",
+            password="password123",
+            confirm_password="password123",
+        )
+
+        with self.assertRaises(RegistrationError):
+            self.auth_service.register(
+                first_name="Another",
+                last_name="User",
+                email="ada@example.com",
+                password="password123",
+                confirm_password="password123",
+            )
+
+    def test_register_with_invalid_email_raises_error(self):
+        with self.assertRaises(RegistrationError):
+            self.auth_service.register(
+                first_name="Ada",
+                last_name="Lovelace",
+                email="not-an-email",
+                password="password123",
+                confirm_password="password123",
+            )
+
+    def test_register_with_password_mismatch_raises_error(self):
+        with self.assertRaises(RegistrationError):
+            self.auth_service.register(
+                first_name="Ada",
+                last_name="Lovelace",
+                email="ada@example.com",
+                password="password123",
+                confirm_password="differentpassword",
+            )
 
 
 if __name__ == "__main__":
