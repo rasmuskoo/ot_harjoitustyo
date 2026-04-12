@@ -10,3 +10,8 @@
 | 12.4.2026 | 1h | Pylint laatutarkastaminen |
 |  | 2h | Tehtävien muokkaus- ja poistamisominaisuudet sekä valmiiksi merkitseminen |
 |  | 1h | Ohjelman lopettamisen parantelu lisäämällä q=quit ominaisuus |
+|  | 2h | Testien luominen | 
+|  | 1h | Ohjeiden vaatimusten noudattamisen tarkastelua |
+|  | 1h | Pylint virheiden korjausta |
+| --- | --- | --- |
+| Yhteensä | 12h |  |
