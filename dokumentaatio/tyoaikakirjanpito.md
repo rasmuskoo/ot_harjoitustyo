@@ -2,7 +2,7 @@
 
 | Päivä | Aika | Kuvaus |
 | --- | --- | --- |
-|  | 1 h | Projektin rakenne ja dokumentaatiopohjat. |
+| 31.3.2026  | 1 h | Projektin rakenne ja dokumentaatiopohjat. |
 |  | 1 h | Rekisteröitymisen toteutus. |
 |  | 1 h | Kirjautuminen ja uloskirjautuminen. |
 |  | 1 h | Tehtävien perustoiminnallisuus: tehtävän luonti (otsikko + kuvaus), osallistujalinkitys ja tehtävälistaus kotinäkymässä. |

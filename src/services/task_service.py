@@ -10,6 +10,10 @@ class TaskCreationError(Exception):
     """Raised when task creation validation fails."""
 
 
+class TaskEditError(Exception):
+    """Raised when task editing validation fails."""
+
+
 class TaskService:
     """Handles task creation and participant linking."""
 
@@ -41,3 +45,39 @@ class TaskService:
 
         self._task_repository.add_participant(created_task.id, creator_user_id)
         return created_task
+
+    def edit_task(
+        self,
+        task_id: int,
+        user_id: int | None,
+        title: str,
+        description: str,
+    ) -> Task:
+        """Edit task header and description for a participant user."""
+        normalized_title = title.strip()
+        normalized_description = description.strip()
+
+        if user_id is None:
+            raise TaskEditError("Signed-in user is required to edit a task.")
+        if not normalized_title:
+            raise TaskEditError("Task header is required.")
+        if not normalized_description:
+            raise TaskEditError("Task description is required.")
+
+        existing_task = self._task_repository.find_task_for_user(task_id, user_id)
+        if existing_task is None:
+            raise TaskEditError("Task was not found for this user.")
+
+        was_updated = self._task_repository.update_task_for_user(
+            task_id=task_id,
+            user_id=user_id,
+            title=normalized_title,
+            description=normalized_description,
+        )
+        if not was_updated:
+            raise TaskEditError("Task update failed.")
+
+        updated_task = self._task_repository.find_task_for_user(task_id, user_id)
+        if updated_task is None:
+            raise TaskEditError("Task was not found after update.")
+        return updated_task

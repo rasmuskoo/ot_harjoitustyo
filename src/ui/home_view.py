@@ -1,8 +1,9 @@
 """CLI home view for authenticated users."""
 
+from src.entities.task import Task
 from src.repositories.task_repository import TaskRepository
 from src.services.session_service import SessionService
-from src.services.task_service import TaskCreationError, TaskService
+from src.services.task_service import TaskCreationError, TaskEditError, TaskService
 
 
 class HomeView:
@@ -26,8 +27,8 @@ class HomeView:
             if user is None:
                 break
 
-            self._render_home(user.first_name, user.last_name, user.id)
-            command = input("Select action (1=refresh, 2=sign out, 3=create task): ").strip()
+            tasks = self._render_home(user.first_name, user.last_name, user.id)
+            command = self._build_command_prompt(tasks)
 
             if command == "2":
                 self._session_service.sign_out()
@@ -38,26 +39,38 @@ class HomeView:
                 self._handle_create_task(user.id)
                 continue
 
+            if command == "4" and tasks:
+                self._handle_edit_task(user.id, tasks)
+                continue
+
             if command != "1":
                 print("Unknown action.")
 
-    def _render_home(self, first_name: str, last_name: str, user_id: int | None) -> None:
-        """Print user home page with task list."""
+    def _render_home(self, first_name: str, last_name: str, user_id: int | None) -> list[Task]:
+        """Print user home page with task list and return listed tasks."""
         print("\nTaskBoard - Home")
         print(f"Signed in as: {first_name} {last_name}")
 
         if user_id is None:
             print("No tasks available.")
-            return
+            return []
 
         tasks = self._task_repository.list_tasks_for_user(user_id)
         if not tasks:
             print("No tasks found for your account.")
-            return
+            return []
 
         print("Your tasks:")
-        for task in tasks:
-            print(f"- {task.title}: {task.description}")
+        for index, task in enumerate(tasks, start=1):
+            print(f"{index}. {task.title}: {task.description}")
+        return tasks
+
+    def _build_command_prompt(self, tasks: list[Task]) -> str:
+        """Build command prompt and return selected command."""
+        options = "1=refresh, 2=sign out, 3=create task"
+        if tasks:
+            options = f"{options}, 4=edit task"
+        return input(f"Select action ({options}): ").strip()
 
     def _handle_create_task(self, user_id: int | None) -> None:
         """Prompt for task fields and create a task for the current user."""
@@ -74,3 +87,38 @@ class HomeView:
             print(f"Task created: {task.title}")
         except TaskCreationError as error:
             print(f"Task creation failed: {error}")
+
+    def _handle_edit_task(self, user_id: int | None, tasks: list[Task]) -> None:
+        """Prompt task selection and update header and description."""
+        if user_id is None:
+            print("Task edit failed: Signed-in user is required.")
+            return
+
+        selection = input("Select task number to edit: ").strip()
+        if not selection.isdigit():
+            print("Task edit failed: Invalid selection.")
+            return
+
+        task_index = int(selection) - 1
+        if task_index < 0 or task_index >= len(tasks):
+            print("Task edit failed: Selection out of range.")
+            return
+
+        selected_task = tasks[task_index]
+        if selected_task.id is None:
+            print("Task edit failed: Selected task has no id.")
+            return
+
+        new_header = input("New header: ")
+        new_description = input("New description: ")
+
+        try:
+            updated_task = self._task_service.edit_task(
+                task_id=selected_task.id,
+                user_id=user_id,
+                title=new_header,
+                description=new_description,
+            )
+            print(f"Task updated: {updated_task.title}")
+        except TaskEditError as error:
+            print(f"Task edit failed: {error}")
