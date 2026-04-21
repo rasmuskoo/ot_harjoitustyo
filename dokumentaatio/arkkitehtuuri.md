@@ -1,5 +1,7 @@
 # Arkkitehtuuri
 
+![Arkkitehtuurikaavio](./architecture.png)
+
 ## Pakkausrakenne
 
 ```mermaid

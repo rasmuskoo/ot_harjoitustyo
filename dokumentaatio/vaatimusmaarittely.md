@@ -16,17 +16,17 @@ Alkuvaiheessa sovelluksessa on yksi käyttäjärooli:
 - Järjestelmä ilmoittaa virheestä, jos tunnus tai salasana on väärä. (tehty)
 
 ### Kirjautumisen jälkeen
-- Käyttäjä voi luoda projektin.
-- Käyttäjä voi pyytää tai asettaa muita käyttäjiä projektiin.
+- Käyttäjä voi luoda projektin. (tehty)
+- Käyttäjä voi pyytää tai asettaa muita käyttäjiä projektiin. (tehty)
 - Käyttäjä voi lisätä uuden tehtävän. (tehty)
 - Käyttäjä voi muokata tehtävän tietoja. (tehty)
 - Käyttäjä voi poistaa tehtävän. (tehty)
-- Käyttäjä voi tarkastella kaikkia sovellukseen lisättyjä projekteja ja tehtäviä. (tehty tehtävien osalta)
+- Käyttäjä voi tarkastella kaikkia sovellukseen lisättyjä projekteja ja tehtäviä. (tehty omien projektien ja tehtävien osalta)
 - Käyttäjä voi hakea projekteja ja tehtäviä avainsanalla.
 - Käyttäjä voi asettaa projektille ja tehtävälle tärkeyden.
 - Käyttäjä voi asettaa projektille ja tehtävälle määräpäivän.
 - Käyttäjä voi asettaa tehtävälle leimoja.
-- Käyttäjä voi osallistua listattuihin tehtäviin. (tehty tehtävän luojan automaattisen osallistumisen osalta)
+- Käyttäjä voi osallistua listattuihin tehtäviin. (tehty tehtävän luojan ja projektin jäsenten automaattisen osallistumisen osalta)
 - Käyttäjä näkee oman käyttäjäsivunsa, jossa näkyvät käyttäjän tilastot.
 - Käyttäjä voi kirjautua ulos järjestelmästä. (tehty)
 
