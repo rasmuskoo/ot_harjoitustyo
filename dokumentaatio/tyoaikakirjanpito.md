@@ -19,4 +19,4 @@
 |  | 3h | Uusien testien luonti jotta kattavuus saadaan yli 50% |
 |  | 0,5h | Lopuksi vielä dokumentaation päivitys ja tarkastus |
 | --- | --- | --- |
-| Yhteensä | 16,5h |  |
+| Yhteensä | 19,5h |  |
