@@ -7,6 +7,7 @@ TaskBoard on Pythonilla toteutettu työpöytäsovellus tehtävien hallintaan.
 ## Dokumentaatio
 
 - [vaatimusmaarittely](dokumentaatio/vaatimusmaarittely.md)
+- [arkkitehtuuri](dokumentaatio/arkkitehtuuri.md)
 - [tyoaikakirjanpito](dokumentaatio/tyoaikakirjanpito.md)
 - [changelog](dokumentaatio/changelog.md)
 
@@ -37,3 +38,7 @@ Testikattavuusraportti:
 `poetry run invoke coverage-report`
 
 Raportti generoituu `htmlcov`-hakemistoon.
+
+Pylint-tarkistukset:
+
+`poetry run invoke lint`

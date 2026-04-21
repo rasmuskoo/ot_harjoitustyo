@@ -11,24 +11,24 @@ Alkuvaiheessa sovelluksessa on yksi käyttäjärooli:
 ## Perusversion tarjoama toiminnallisuus
 
 ### Ennen kirjautumista
-- Käyttäjä voi luoda uuden käyttäjätilin.
-- Käyttäjä voi kirjautua sisään olemassa olevalla tunnuksella.
-- Järjestelmä ilmoittaa virheestä, jos tunnus tai salasana on väärä.
+- Käyttäjä voi luoda uuden käyttäjätilin. (tehty)
+- Käyttäjä voi kirjautua sisään olemassa olevalla tunnuksella. (tehty)
+- Järjestelmä ilmoittaa virheestä, jos tunnus tai salasana on väärä. (tehty)
 
 ### Kirjautumisen jälkeen
 - Käyttäjä voi luoda projektin.
 - Käyttäjä voi pyytää tai asettaa muita käyttäjiä projektiin.
-- Käyttäjä voi lisätä uuden tehtävän.
-- Käyttäjä voi muokata tehtävän tietoja.
-- Käyttäjä voi poistaa tehtävän.
-- Käyttäjä voi tarkastella kaikkia sovellukseen lisättyjä projekteja ja tehtäviä.
+- Käyttäjä voi lisätä uuden tehtävän. (tehty)
+- Käyttäjä voi muokata tehtävän tietoja. (tehty)
+- Käyttäjä voi poistaa tehtävän. (tehty)
+- Käyttäjä voi tarkastella kaikkia sovellukseen lisättyjä projekteja ja tehtäviä. (tehty tehtävien osalta)
 - Käyttäjä voi hakea projekteja ja tehtäviä avainsanalla.
 - Käyttäjä voi asettaa projektille ja tehtävälle tärkeyden.
 - Käyttäjä voi asettaa projektille ja tehtävälle määräpäivän.
 - Käyttäjä voi asettaa tehtävälle leimoja.
-- Käyttäjä voi osallistua listattuihin tehtäviin.
+- Käyttäjä voi osallistua listattuihin tehtäviin. (tehty tehtävän luojan automaattisen osallistumisen osalta)
 - Käyttäjä näkee oman käyttäjäsivunsa, jossa näkyvät käyttäjän tilastot.
-- Käyttäjä voi kirjautua ulos järjestelmästä.
+- Käyttäjä voi kirjautua ulos järjestelmästä. (tehty)
 
 ## Jatkokehitysideoita
 Perusversion jälkeen sovellusta voidaan laajentaa esimerkiksi seuraavilla toiminnallisuuksilla:

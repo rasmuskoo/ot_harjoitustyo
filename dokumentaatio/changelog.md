@@ -21,3 +21,10 @@
 - Valmiita tehtäviä voi tarkastella valmiden tehtävien listasta
 - Tehtäviä voi myös poistaa
 - q-kirjain toimii ohjelman pysäyttämiseksi
+
+## Viikko 5
+
+- Lisätty `lint`-invoke-tehtävä pylint-tarkistusten suorittamiseen
+- Lisätty arkkitehtuuridokumentti, jossa on rakennekaavio ja tehtävän luonnin sekvenssikaavio
+- Päivitetty vaatimusmäärittelyyn toteutuneille ominaisuuksille `tehty`-merkinnät
+- Päivitetty README:hen linkki arkkitehtuuridokumentaatioon ja pylint-ohje

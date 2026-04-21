@@ -25,3 +25,9 @@ def coverage_report(context):
     context.run("coverage run -m pytest src/tests")
     context.run("coverage html")
     print("Coverage report generated at htmlcov/index.html")
+
+
+@task
+def lint(context):
+    """Run pylint for application code."""
+    context.run("pylint src/main.py src/entities src/repositories src/services")
