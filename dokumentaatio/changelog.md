@@ -25,6 +25,9 @@
 ## Viikko 5
 
 - Lisätty `lint`-invoke-tehtävä pylint-tarkistusten suorittamiseen
-- Lisätty arkkitehtuuridokumentti, jossa on rakennekaavio ja tehtävän luonnin sekvenssikaavio
-- Päivitetty vaatimusmäärittelyyn toteutuneille ominaisuuksille `tehty`-merkinnät
+- Lisätty puuttuva arkkitehtuuridokumentti, jossa on rakennekaavio ja tehtävän luonnin sekvenssikaavio
+- Päivitetty vaatimusmäärittelyyn toteutuneille ominaisuuksille puuttuvat `tehty`-merkinnät
 - Päivitetty README:hen linkki arkkitehtuuridokumentaatioon ja pylint-ohje
+- Lisätty projektien luominen ja poistaminen ohjelmaan
+- Lisätty käyttäjien liittäminen projekteihin
+- Lisätty tehtävien luominen ja liittäminen projekteihin

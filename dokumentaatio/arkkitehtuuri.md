@@ -2,6 +2,12 @@
 
 ![Arkkitehtuurikaavio](./architecture.png)
 
+  ui-pakkaus sisältää komentorivikäyttöliittymästä vastaavan koodin. services sisältää
+  sovelluslogiikan, kuten käyttäjien tunnistautumisen, projektien hallinnan ja tehtäviin
+  liittyvät toiminnot. repositories vastaa tietojen pysyväistallennuksesta SQLite-tietokantaan.
+  entities sisältää luokat, jotka kuvaavat sovelluksen keskeisiä tietokohteita, kuten käyttäjiä,
+  tehtäviä ja projekteja.
+
 ## Pakkausrakenne
 
 ```mermaid

@@ -13,5 +13,10 @@
 |  | 2h | Testien luominen | 
 |  | 1h | Ohjeiden vaatimusten noudattamisen tarkastelua |
 |  | 1h | Pylint virheiden korjausta |
+| 21.4.2026 | 1h | Puuttuvien dokumentaatioiden lisääminen viikolta 4 ja niiden päivittäminen viikon 5 vaatimuksiin 
+|  | 1h | Projektien luonti ja poistaminen |
+|  | 1h | Käyttäjien ja tehtävien liittäminen projekteihin |
+|  | 3h | Uusien testien luonti jotta kattavuus saadaan yli 50% |
+|  | 0,5h | Lopuksi vielä dokumentaation päivitys ja tarkastus |
 | --- | --- | --- |
-| Yhteensä | 12h |  |
+| Yhteensä | 16,5h |  |
