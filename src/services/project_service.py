@@ -18,6 +18,10 @@ class ProjectTaskError(Exception):
     """Raised when project task operations fail."""
 
 
+class ProjectDeleteError(Exception):
+    """Raised when project deletion fails."""
+
+
 @dataclass
 class ProjectDetails:
     """Project aggregate for project view rendering."""
@@ -108,3 +112,16 @@ class ProjectService:
         if user_id is None:
             return []
         return self._task_repository.list_unassigned_tasks_for_user(user_id)
+
+    def delete_project(self, project_id: int, user_id: int | None) -> None:
+        """Delete a project for its creator and unlink its tasks."""
+        if user_id is None:
+            raise ProjectDeleteError("Signed-in user is required to delete a project.")
+
+        project = self._project_repository.find_project_for_user(project_id, user_id)
+        if project is None:
+            raise ProjectDeleteError("Project was not found for this user.")
+
+        was_deleted = self._project_repository.delete_project_for_user(project_id, user_id)
+        if not was_deleted:
+            raise ProjectDeleteError("Only the project creator can delete the project.")

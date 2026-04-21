@@ -7,6 +7,7 @@ from src.entities.task import Task
 from src.entities.user import User
 from src.services.project_service import (
     ProjectCreationError,
+    ProjectDeleteError,
     ProjectService,
     ProjectTaskError,
 )
@@ -74,6 +75,28 @@ class FakeProjectRepository:
     def list_tasks(self, project_id: int) -> list[Task]:
         """Return stored tasks for a project."""
         return list(self._tasks.get(project_id, []))
+
+    def delete_project_for_user(self, project_id: int, user_id: int) -> bool:
+        """Delete project for creator and unlink project tasks."""
+        project = self._projects.get(project_id)
+        if project is None or project.created_by_user_id != user_id:
+            return False
+
+        for tasks in self._tasks.values():
+            for index, task in enumerate(tasks):
+                if task.project_id == project_id:
+                    tasks[index] = Task(
+                        id=task.id,
+                        title=task.title,
+                        description=task.description,
+                        created_by_user_id=task.created_by_user_id,
+                        created_at=task.created_at,
+                        is_completed=task.is_completed,
+                    )
+        self._tasks.pop(project_id, None)
+        self._members.pop(project_id, None)
+        del self._projects[project_id]
+        return True
 
 
 class FakeTaskRepository:
@@ -159,6 +182,21 @@ class TestProjectService(unittest.TestCase):
 
         with self.assertRaises(ProjectTaskError):
             self.project_service.get_project_details(project.id, 2)
+
+    def test_project_creator_can_delete_project(self):
+        """Project creator should be able to delete a project."""
+        project = self.project_service.create_project("Alpha", 1, [2])
+
+        self.project_service.delete_project(project.id, 1)
+
+        self.assertEqual(self.project_service.list_projects_for_user(1), [])
+
+    def test_non_creator_cannot_delete_project(self):
+        """Non-creator member should not be able to delete a project."""
+        project = self.project_service.create_project("Alpha", 1, [2])
+
+        with self.assertRaises(ProjectDeleteError):
+            self.project_service.delete_project(project.id, 2)
 
 
 if __name__ == "__main__":

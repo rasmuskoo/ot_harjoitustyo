@@ -7,6 +7,7 @@ from src.repositories.task_repository import TaskRepository
 from src.repositories.user_repository import UserRepository
 from src.services.project_service import (
     ProjectCreationError,
+    ProjectDeleteError,
     ProjectDetails,
     ProjectService,
     ProjectTaskError,
@@ -270,11 +271,15 @@ class HomeView:
             return
 
         self._render_project(details)
-        action = input("Select action (1=back, 2=create task, 3=add existing task): ").strip()
+        action = input(
+            "Select action (1=back, 2=create task, 3=add existing task, 4=delete project): "
+        ).strip()
         if action == "2":
             self._handle_create_task_for_project(details, user_id)
         elif action == "3":
             self._handle_add_existing_task_to_project(details, user_id)
+        elif action == "4":
+            self._handle_delete_project(details, user_id)
 
     def _render_project(self, details: ProjectDetails) -> None:
         """Print project details, members, and tasks."""
@@ -339,6 +344,19 @@ class HomeView:
             print(f"Task added to project: {selected_task.title}")
         except ProjectTaskError as error:
             print(f"Project task update failed: {error}")
+
+    def _handle_delete_project(self, details: ProjectDetails, user_id: int | None) -> None:
+        """Delete a project if current user is the creator."""
+        confirmation = input(f"Delete project '{details.project.name}'? (y/N): ").strip().lower()
+        if confirmation != "y":
+            print("Project deletion cancelled.")
+            return
+
+        try:
+            self._project_service.delete_project(details.project.id, user_id)
+            print(f"Project deleted: {details.project.name}")
+        except ProjectDeleteError as error:
+            print(f"Project deletion failed: {error}")
 
     def _select_users(self, users: list[User]) -> list[int]:
         """Prompt user selection by comma-separated list."""

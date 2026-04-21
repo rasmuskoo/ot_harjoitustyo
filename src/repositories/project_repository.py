@@ -149,3 +149,42 @@ class ProjectRepository:
             )
             for row in rows
         ]
+
+    def delete_project_for_user(self, project_id: int, user_id: int) -> bool:
+        """Delete a project if the given user is its creator."""
+        with get_database_connection() as connection:
+            permission_cursor = connection.execute(
+                """
+                SELECT 1
+                FROM projects
+                WHERE id = ? AND created_by_user_id = ?
+                """,
+                (project_id, user_id),
+            )
+            if permission_cursor.fetchone() is None:
+                return False
+
+            connection.execute(
+                """
+                UPDATE tasks
+                SET project_id = NULL
+                WHERE project_id = ?
+                """,
+                (project_id,),
+            )
+            connection.execute(
+                """
+                DELETE FROM project_members
+                WHERE project_id = ?
+                """,
+                (project_id,),
+            )
+            delete_cursor = connection.execute(
+                """
+                DELETE FROM projects
+                WHERE id = ?
+                """,
+                (project_id,),
+            )
+            connection.commit()
+        return delete_cursor.rowcount > 0
