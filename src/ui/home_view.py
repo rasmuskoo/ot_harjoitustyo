@@ -1,10 +1,20 @@
 """CLI home view for authenticated users."""
 
+from src.entities.project import Project
 from src.entities.task import Task
+from src.entities.user import User
 from src.repositories.task_repository import TaskRepository
+from src.repositories.user_repository import UserRepository
+from src.services.project_service import (
+    ProjectCreationError,
+    ProjectDetails,
+    ProjectService,
+    ProjectTaskError,
+)
 from src.services.session_service import SessionService
 from src.services.task_service import (
     TaskCompleteError,
+    TaskCreationContext,
     TaskCreationError,
     TaskDeleteError,
     TaskEditError,
@@ -18,12 +28,16 @@ class HomeView:
     def __init__(
         self,
         session_service: SessionService,
+        user_repository: UserRepository,
         task_repository: TaskRepository,
+        project_service: ProjectService,
         task_service: TaskService,
     ) -> None:
         """Create home view dependencies."""
         self._session_service = session_service
+        self._user_repository = user_repository
         self._task_repository = task_repository
+        self._project_service = project_service
         self._task_service = task_service
 
     def run(self) -> bool:
@@ -64,6 +78,14 @@ class HomeView:
                 self._handle_view_completed_tasks(user.id)
                 continue
 
+            if command == "8":
+                self._handle_create_project(user.id)
+                continue
+
+            if command == "9":
+                self._handle_manage_project(user.id)
+                continue
+
             if command != "1":
                 print("Unknown action.")
         return True
@@ -82,18 +104,28 @@ class HomeView:
             return []
 
         tasks = self._task_repository.list_tasks_for_user(user_id)
+        projects = self._project_service.list_projects_for_user(user_id)
         if not tasks:
             print("No tasks found for your account.")
-            return []
+        else:
+            print("Your tasks:")
+            for index, task in enumerate(tasks, start=1):
+                print(f"{index}. {task.title}: {task.description}")
 
-        print("Your tasks:")
-        for index, task in enumerate(tasks, start=1):
-            print(f"{index}. {task.title}: {task.description}")
+        if projects:
+            print("Your projects:")
+            for index, project in enumerate(projects, start=1):
+                print(f"{index}. {project.name}")
+        else:
+            print("No projects found for your account.")
         return tasks
 
     def _build_command_prompt(self, tasks: list[Task]) -> str:
         """Build command prompt and return selected command."""
-        options = "1=refresh, 2=sign out, 3=create task, 7=view completed tasks, q=quit"
+        options = (
+            "1=refresh, 2=sign out, 3=create task, 7=view completed tasks, "
+            "8=create project, 9=view projects, q=quit"
+        )
         if tasks:
             options = f"{options}, 4=edit task, 5=complete task, 6=delete task"
         return input(f"Select action ({options}): ").strip()
@@ -108,7 +140,7 @@ class HomeView:
             task = self._task_service.create_task(
                 title=header,
                 description=description,
-                creator_user_id=user_id,
+                context=TaskCreationContext(creator_user_id=user_id),
             )
             print(f"Task created: {task.title}")
         except TaskCreationError as error:
@@ -203,3 +235,144 @@ class HomeView:
 
         for index, task in enumerate(completed_tasks, start=1):
             print(f"{index}. {task.title}: {task.description}")
+
+    def _handle_create_project(self, user_id: int | None) -> None:
+        """Prompt for project fields and create a project."""
+        print("\nCreate Project")
+        name = input("Project name: ")
+        users = self._user_repository.list_users()
+        if not users:
+            print("Project creation failed: No users available.")
+            return
+
+        selected_user_ids = self._select_users(users)
+        try:
+            project = self._project_service.create_project(name, user_id, selected_user_ids)
+            print(f"Project created: {project.name}")
+        except ProjectCreationError as error:
+            print(f"Project creation failed: {error}")
+
+    def _handle_manage_project(self, user_id: int | None) -> None:
+        """Display projects and allow project-specific task actions."""
+        projects = self._project_service.list_projects_for_user(user_id)
+        if not projects:
+            print("No projects found for your account.")
+            return
+
+        project = self._select_project(projects)
+        if project is None:
+            return
+
+        try:
+            details = self._project_service.get_project_details(project.id, user_id)
+        except ProjectTaskError as error:
+            print(f"Project view failed: {error}")
+            return
+
+        self._render_project(details)
+        action = input("Select action (1=back, 2=create task, 3=add existing task): ").strip()
+        if action == "2":
+            self._handle_create_task_for_project(details, user_id)
+        elif action == "3":
+            self._handle_add_existing_task_to_project(details, user_id)
+
+    def _render_project(self, details: ProjectDetails) -> None:
+        """Print project details, members, and tasks."""
+        print(f"\nProject: {details.project.name}")
+        print("Members:")
+        for index, member in enumerate(details.members, start=1):
+            print(f"{index}. {member.first_name} {member.last_name} ({member.email})")
+
+        print("Tasks:")
+        if not details.tasks:
+            print("No tasks in this project.")
+            return
+
+        for index, task in enumerate(details.tasks, start=1):
+            print(f"{index}. {task.title}: {task.description}")
+
+    def _handle_create_task_for_project(self, details: ProjectDetails, user_id: int | None) -> None:
+        """Prompt for fields and create a new task inside a project."""
+        print("\nCreate Project Task")
+        header = input("Header: ")
+        description = input("Description: ")
+        member_ids = [member.id for member in details.members if member.id is not None]
+
+        try:
+            task = self._task_service.create_task(
+                title=header,
+                description=description,
+                context=TaskCreationContext(
+                    creator_user_id=user_id,
+                    project_id=details.project.id,
+                    participant_user_ids=member_ids,
+                ),
+            )
+            print(f"Task created in project: {task.title}")
+        except TaskCreationError as error:
+            print(f"Project task creation failed: {error}")
+
+    def _handle_add_existing_task_to_project(
+        self,
+        details: ProjectDetails,
+        user_id: int | None,
+    ) -> None:
+        """Prompt task selection and link an existing task to the project."""
+        available_tasks = self._project_service.list_available_tasks_for_project(
+            details.project.id,
+            user_id,
+        )
+        if not available_tasks:
+            print("No existing tasks available to add.")
+            return
+
+        selected_task = self._select_task(available_tasks, "add to project")
+        if selected_task is None:
+            return
+
+        try:
+            self._project_service.add_existing_task_to_project(
+                details.project.id,
+                selected_task.id,
+                user_id,
+            )
+            print(f"Task added to project: {selected_task.title}")
+        except ProjectTaskError as error:
+            print(f"Project task update failed: {error}")
+
+    def _select_users(self, users: list[User]) -> list[int]:
+        """Prompt user selection by comma-separated list."""
+        print("Select project members by number, separated by commas:")
+        for index, user in enumerate(users, start=1):
+            print(f"{index}. {user.first_name} {user.last_name} ({user.email})")
+
+        selection = input("Members: ").strip()
+        if not selection:
+            return []
+
+        selected_user_ids: list[int] = []
+        for token in selection.split(","):
+            candidate = token.strip()
+            if not candidate.isdigit():
+                continue
+            user_index = int(candidate) - 1
+            if 0 <= user_index < len(users) and users[user_index].id is not None:
+                selected_user_ids.append(users[user_index].id)
+        return selected_user_ids
+
+    def _select_project(self, projects: list[Project]) -> Project | None:
+        """Prompt user to select one project by number."""
+        print("\nProjects")
+        for index, project in enumerate(projects, start=1):
+            print(f"{index}. {project.name}")
+
+        selection = input("Select project number: ").strip()
+        if not selection.isdigit():
+            print("Project selection failed: Invalid selection.")
+            return None
+
+        project_index = int(selection) - 1
+        if project_index < 0 or project_index >= len(projects):
+            print("Project selection failed: Selection out of range.")
+            return None
+        return projects[project_index]

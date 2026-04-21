@@ -16,14 +16,16 @@ class TaskRepository:
                     title,
                     description,
                     created_by_user_id,
+                    project_id,
                     created_at
                 )
-                VALUES (?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?)
                 """,
                 (
                     task.title,
                     task.description,
                     task.created_by_user_id,
+                    task.project_id,
                     task.created_at,
                 ),
             )
@@ -35,6 +37,7 @@ class TaskRepository:
             description=task.description,
             created_by_user_id=task.created_by_user_id,
             created_at=task.created_at,
+            project_id=task.project_id,
         )
 
     def add_participant(self, task_id: int, user_id: int) -> None:
@@ -60,6 +63,7 @@ class TaskRepository:
                     t.description,
                     t.created_by_user_id,
                     t.created_at,
+                    t.project_id,
                     t.is_completed
                 FROM tasks t
                 INNER JOIN task_participants tp ON tp.task_id = t.id
@@ -80,7 +84,8 @@ class TaskRepository:
                     description=row[2],
                     created_by_user_id=row[3],
                     created_at=row[4],
-                    is_completed=bool(row[5]),
+                    project_id=row[5],
+                    is_completed=bool(row[6]),
                 )
             )
         return tasks
@@ -96,6 +101,7 @@ class TaskRepository:
                     t.description,
                     t.created_by_user_id,
                     t.created_at,
+                    t.project_id,
                     t.is_completed
                 FROM tasks t
                 INNER JOIN task_participants tp ON tp.task_id = t.id
@@ -116,7 +122,8 @@ class TaskRepository:
                     description=row[2],
                     created_by_user_id=row[3],
                     created_at=row[4],
-                    is_completed=bool(row[5]),
+                    project_id=row[5],
+                    is_completed=bool(row[6]),
                 )
             )
         return tasks
@@ -132,6 +139,7 @@ class TaskRepository:
                     t.description,
                     t.created_by_user_id,
                     t.created_at,
+                    t.project_id,
                     t.is_completed
                 FROM tasks t
                 INNER JOIN task_participants tp ON tp.task_id = t.id
@@ -150,7 +158,8 @@ class TaskRepository:
             description=row[2],
             created_by_user_id=row[3],
             created_at=row[4],
-            is_completed=bool(row[5]),
+            project_id=row[5],
+            is_completed=bool(row[6]),
         )
 
     def update_task_for_user(
@@ -228,3 +237,74 @@ class TaskRepository:
             )
             connection.commit()
         return delete_cursor.rowcount > 0
+
+    def add_participants(self, task_id: int, user_ids: list[int]) -> None:
+        """Attach many users to a task participant list."""
+        if not user_ids:
+            return
+
+        with get_database_connection() as connection:
+            connection.executemany(
+                """
+                INSERT OR IGNORE INTO task_participants (task_id, user_id)
+                VALUES (?, ?)
+                """,
+                [(task_id, user_id) for user_id in user_ids],
+            )
+            connection.commit()
+
+    def list_unassigned_tasks_for_user(self, user_id: int) -> list[Task]:
+        """Return tasks visible to user that are not yet linked to a project."""
+        with get_database_connection() as connection:
+            cursor = connection.execute(
+                """
+                SELECT
+                    t.id,
+                    t.title,
+                    t.description,
+                    t.created_by_user_id,
+                    t.created_at,
+                    t.project_id,
+                    t.is_completed
+                FROM tasks t
+                INNER JOIN task_participants tp ON tp.task_id = t.id
+                WHERE tp.user_id = ?
+                  AND t.project_id IS NULL
+                ORDER BY t.created_at DESC
+                """,
+                (user_id,),
+            )
+            rows = cursor.fetchall()
+
+        return [
+            Task(
+                id=row[0],
+                title=row[1],
+                description=row[2],
+                created_by_user_id=row[3],
+                created_at=row[4],
+                project_id=row[5],
+                is_completed=bool(row[6]),
+            )
+            for row in rows
+        ]
+
+    def assign_task_to_project_for_user(self, task_id: int, project_id: int, user_id: int) -> bool:
+        """Link a task to a project if the user is already a participant."""
+        with get_database_connection() as connection:
+            cursor = connection.execute(
+                """
+                UPDATE tasks
+                SET project_id = ?
+                WHERE id = ?
+                  AND project_id IS NULL
+                  AND EXISTS (
+                      SELECT 1
+                      FROM task_participants
+                      WHERE task_id = tasks.id AND user_id = ?
+                  )
+                """,
+                (project_id, task_id, user_id),
+            )
+            connection.commit()
+        return cursor.rowcount > 0

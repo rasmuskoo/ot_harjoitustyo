@@ -5,6 +5,7 @@ import unittest
 from src.entities.task import Task
 from src.services.task_service import (
     TaskCompleteError,
+    TaskCreationContext,
     TaskCreationError,
     TaskDeleteError,
     TaskEditError,
@@ -32,6 +33,7 @@ class FakeTaskRepository:
             description=task.description,
             created_by_user_id=task.created_by_user_id,
             created_at=task.created_at,
+            project_id=task.project_id,
             is_completed=task.is_completed,
         )
         self._tasks[task_id] = stored_task
@@ -40,6 +42,10 @@ class FakeTaskRepository:
     def add_participant(self, task_id: int, user_id: int) -> None:
         """Attach user to task participant list."""
         self._participants.setdefault(task_id, set()).add(user_id)
+
+    def add_participants(self, task_id: int, user_ids: list[int]) -> None:
+        """Attach many users to task participant list."""
+        self._participants.setdefault(task_id, set()).update(user_ids)
 
     def find_task_for_user(self, task_id: int, user_id: int) -> Task | None:
         """Return task if user is participant."""
@@ -68,6 +74,7 @@ class FakeTaskRepository:
             description=description,
             created_by_user_id=task.created_by_user_id,
             created_at=task.created_at,
+            project_id=task.project_id,
             is_completed=task.is_completed,
         )
         return True
@@ -84,6 +91,7 @@ class FakeTaskRepository:
             description=task.description,
             created_by_user_id=task.created_by_user_id,
             created_at=task.created_at,
+            project_id=task.project_id,
             is_completed=True,
         )
         return True
@@ -109,7 +117,11 @@ class TestTaskService(unittest.TestCase):
 
     def test_create_task_success(self):
         """Task creation should succeed with valid input."""
-        task = self.task_service.create_task("Header", "Description", 1)
+        task = self.task_service.create_task(
+            "Header",
+            "Description",
+            TaskCreationContext(creator_user_id=1),
+        )
 
         self.assertIsNotNone(task.id)
         self.assertEqual(task.title, "Header")
@@ -118,11 +130,34 @@ class TestTaskService(unittest.TestCase):
     def test_create_task_with_empty_header_raises_error(self):
         """Empty header should fail task creation."""
         with self.assertRaises(TaskCreationError):
-            self.task_service.create_task("", "Description", 1)
+            self.task_service.create_task(
+                "",
+                "Description",
+                TaskCreationContext(creator_user_id=1),
+            )
+
+    def test_create_project_task_adds_project_and_all_participants(self):
+        """Project task should store project id and selected participants."""
+        task = self.task_service.create_task(
+            "Header",
+            "Description",
+            TaskCreationContext(
+                creator_user_id=1,
+                project_id=2,
+                participant_user_ids=[1, 2, 3],
+            ),
+        )
+
+        self.assertEqual(task.project_id, 2)
+        self.assertEqual(self.task_repository._participants[task.id], {1, 2, 3})
 
     def test_edit_task_success(self):
         """Task edit should update title and description."""
-        created_task = self.task_service.create_task("Old", "Old desc", 1)
+        created_task = self.task_service.create_task(
+            "Old",
+            "Old desc",
+            TaskCreationContext(creator_user_id=1),
+        )
 
         updated_task = self.task_service.edit_task(created_task.id, 1, "New", "New desc")
 
@@ -136,7 +171,11 @@ class TestTaskService(unittest.TestCase):
 
     def test_complete_task_success(self):
         """Task completion should mark task as completed."""
-        created_task = self.task_service.create_task("Header", "Description", 1)
+        created_task = self.task_service.create_task(
+            "Header",
+            "Description",
+            TaskCreationContext(creator_user_id=1),
+        )
 
         self.task_service.complete_task(created_task.id, 1)
 
@@ -146,7 +185,11 @@ class TestTaskService(unittest.TestCase):
 
     def test_complete_task_already_completed_raises_error(self):
         """Completing already completed task should fail."""
-        created_task = self.task_service.create_task("Header", "Description", 1)
+        created_task = self.task_service.create_task(
+            "Header",
+            "Description",
+            TaskCreationContext(creator_user_id=1),
+        )
         self.task_service.complete_task(created_task.id, 1)
 
         with self.assertRaises(TaskCompleteError):
@@ -154,7 +197,11 @@ class TestTaskService(unittest.TestCase):
 
     def test_delete_task_success(self):
         """Task deletion should remove task from repository."""
-        created_task = self.task_service.create_task("Header", "Description", 1)
+        created_task = self.task_service.create_task(
+            "Header",
+            "Description",
+            TaskCreationContext(creator_user_id=1),
+        )
 
         self.task_service.delete_task(created_task.id, 1)
 

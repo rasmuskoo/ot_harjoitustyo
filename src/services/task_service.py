@@ -1,5 +1,6 @@
 """Task-related application service logic."""
 
+from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from src.entities.task import Task
@@ -22,6 +23,15 @@ class TaskDeleteError(Exception):
     """Raised when task deletion fails."""
 
 
+@dataclass
+class TaskCreationContext:
+    """Extra metadata for task creation."""
+
+    creator_user_id: int | None
+    project_id: int | None = None
+    participant_user_ids: list[int] | None = None
+
+
 class TaskService:
     """Handles task creation, update, completion, and deletion."""
 
@@ -29,7 +39,12 @@ class TaskService:
         """Create task service with optional repository dependency."""
         self._task_repository = task_repository or TaskRepository()
 
-    def create_task(self, title: str, description: str, creator_user_id: int | None) -> Task:
+    def create_task(
+        self,
+        title: str,
+        description: str,
+        context: TaskCreationContext,
+    ) -> Task:
         """Create a task and link creator as a participant."""
         normalized_title = title.strip()
         normalized_description = description.strip()
@@ -38,20 +53,27 @@ class TaskService:
             raise TaskCreationError("Task header is required.")
         if not normalized_description:
             raise TaskCreationError("Task description is required.")
-        if creator_user_id is None:
+        if context.creator_user_id is None:
             raise TaskCreationError("Signed-in user is required to create a task.")
 
         task = Task(
             title=normalized_title,
             description=normalized_description,
-            created_by_user_id=creator_user_id,
+            created_by_user_id=context.creator_user_id,
             created_at=datetime.now(timezone.utc).isoformat(),
+            project_id=context.project_id,
         )
         created_task = self._task_repository.create_task(task)
         if created_task.id is None:
             raise TaskCreationError("Task creation failed.")
 
-        self._task_repository.add_participant(created_task.id, creator_user_id)
+        participant_ids = list(
+            dict.fromkeys(context.participant_user_ids or [context.creator_user_id])
+        )
+        if context.creator_user_id not in participant_ids:
+            participant_ids.insert(0, context.creator_user_id)
+
+        self._task_repository.add_participants(created_task.id, participant_ids)
         return created_task
 
     def edit_task(

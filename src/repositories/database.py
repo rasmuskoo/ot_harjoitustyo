@@ -36,9 +36,33 @@ def initialize_database() -> None:
                 title TEXT NOT NULL,
                 description TEXT NOT NULL,
                 created_by_user_id INTEGER NOT NULL,
+                project_id INTEGER,
                 is_completed INTEGER NOT NULL DEFAULT 0,
                 created_at TEXT NOT NULL,
+                FOREIGN KEY (created_by_user_id) REFERENCES users(id),
+                FOREIGN KEY (project_id) REFERENCES projects(id)
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS projects (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                created_by_user_id INTEGER NOT NULL,
+                created_at TEXT NOT NULL,
                 FOREIGN KEY (created_by_user_id) REFERENCES users(id)
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS project_members (
+                project_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                PRIMARY KEY (project_id, user_id),
+                FOREIGN KEY (project_id) REFERENCES projects(id),
+                FOREIGN KEY (user_id) REFERENCES users(id)
             )
             """
         )
@@ -60,6 +84,13 @@ def initialize_database() -> None:
                 """
                 ALTER TABLE tasks
                 ADD COLUMN is_completed INTEGER NOT NULL DEFAULT 0
+                """
+            )
+        if "project_id" not in column_names:
+            connection.execute(
+                """
+                ALTER TABLE tasks
+                ADD COLUMN project_id INTEGER
                 """
             )
         connection.commit()

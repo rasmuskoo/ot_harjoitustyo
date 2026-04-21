@@ -58,3 +58,27 @@ class UserRepository:
             password_hash=row[4],
             created_at=row[5],
         )
+
+    def list_users(self) -> list[User]:
+        """Return all registered users ordered by name."""
+        with get_database_connection() as connection:
+            cursor = connection.execute(
+                """
+                SELECT id, first_name, last_name, email, password_hash, created_at
+                FROM users
+                ORDER BY first_name, last_name, email
+                """
+            )
+            rows = cursor.fetchall()
+
+        return [
+            User(
+                id=row[0],
+                first_name=row[1],
+                last_name=row[2],
+                email=row[3],
+                password_hash=row[4],
+                created_at=row[5],
+            )
+            for row in rows
+        ]
