@@ -31,6 +31,6 @@ def coverage_report(context):
 def lint(context):
     """Run pylint for application code."""
     context.run(
-        "PYLINTHOME=.pylint.d pylint --rcfile=../.pylintrc "
+        "PYLINTHOME=.pylint.d pylint --rcfile=.pylintrc "
         "src/main.py src/entities src/repositories src/services"
     )
