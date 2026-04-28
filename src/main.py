@@ -1,10 +1,12 @@
 """Application entry point for TaskBoard desktop."""
 
 from src.repositories.database import initialize_database
+from src.repositories.label_repository import LabelRepository
 from src.repositories.project_repository import ProjectRepository
 from src.repositories.task_repository import TaskRepository
 from src.repositories.user_repository import UserRepository
 from src.services.auth_service import AuthService
+from src.services.label_service import LabelService
 from src.services.project_service import ProjectService
 from src.services.session_service import SessionService
 from src.services.task_service import TaskService
@@ -20,8 +22,10 @@ def _build_views() -> tuple[SignInView, HomeView]:
     user_repository = UserRepository()
     task_repository = TaskRepository()
     project_repository = ProjectRepository()
+    label_repository = LabelRepository()
     task_service = TaskService(task_repository)
     project_service = ProjectService(project_repository, task_repository)
+    label_service = LabelService(label_repository, task_repository)
 
     sign_up_view = SignUpView(auth_service)
     sign_in_view = SignInView(auth_service, session_service, sign_up_view)
@@ -31,6 +35,7 @@ def _build_views() -> tuple[SignInView, HomeView]:
         task_repository,
         project_service,
         task_service,
+        label_service,
     )
     return sign_in_view, home_view
 

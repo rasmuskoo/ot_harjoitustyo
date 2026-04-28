@@ -1,10 +1,16 @@
 """CLI home view for authenticated users."""
 
+from src.entities.label import Label
 from src.entities.project import Project
 from src.entities.task import Task
 from src.entities.user import User
 from src.repositories.task_repository import TaskRepository
 from src.repositories.user_repository import UserRepository
+from src.services.label_service import (
+    LabelAssignmentError,
+    LabelCreationError,
+    LabelService,
+)
 from src.services.project_service import (
     ProjectCreationError,
     ProjectCreationContext,
@@ -34,6 +40,7 @@ class HomeView:
         task_repository: TaskRepository,
         project_service: ProjectService,
         task_service: TaskService,
+        label_service: LabelService,
     ) -> None:
         """Create home view dependencies."""
         self._session_service = session_service
@@ -41,6 +48,7 @@ class HomeView:
         self._task_repository = task_repository
         self._project_service = project_service
         self._task_service = task_service
+        self._label_service = label_service
 
     def run(self) -> bool:
         """Run the home view until user signs out or quits the program."""
@@ -88,6 +96,14 @@ class HomeView:
                 self._handle_manage_project(user.id)
                 continue
 
+            if command == "10":
+                self._handle_create_label()
+                continue
+
+            if command == "11" and tasks:
+                self._handle_add_label_to_task(user.id, tasks)
+                continue
+
             if command != "1":
                 print("Unknown action.")
         return True
@@ -126,10 +142,13 @@ class HomeView:
         """Build command prompt and return selected command."""
         options = (
             "1=refresh, 2=sign out, 3=create task, 7=view completed tasks, "
-            "8=create project, 9=view projects, q=quit"
+            "8=create project, 9=view projects, 10=create label, q=quit"
         )
         if tasks:
-            options = f"{options}, 4=edit task, 5=complete task, 6=delete task"
+            options = (
+                f"{options}, 4=edit task, 5=complete task, "
+                "6=delete task, 11=add label to task"
+            )
         return input(f"Select action ({options}): ").strip()
 
     def _handle_create_task(self, user_id: int | None) -> None:
@@ -379,6 +398,42 @@ class HomeView:
         except ProjectDeleteError as error:
             print(f"Project deletion failed: {error}")
 
+    def _handle_create_label(self) -> None:
+        """Prompt for label name and create a reusable label."""
+        print("\nCreate Label")
+        name = input("Label name: ")
+
+        try:
+            label = self._label_service.create_label(name)
+            print(f"Label created: {label.name}")
+        except LabelCreationError as error:
+            print(f"Label creation failed: {error}")
+
+    def _handle_add_label_to_task(self, user_id: int | None, tasks: list[Task]) -> None:
+        """Prompt task and label selection and attach label to task."""
+        labels = self._label_service.list_labels()
+        if not labels:
+            print("No labels available. Create a label first.")
+            return
+
+        selected_task = self._select_task(tasks, "label")
+        if selected_task is None:
+            return
+
+        selected_label_id = self._select_label(labels)
+        if selected_label_id is None:
+            return
+
+        try:
+            self._label_service.add_label_to_task(
+                selected_task.id,
+                selected_label_id,
+                user_id,
+            )
+            print(f"Label added to task: {selected_task.title}")
+        except LabelAssignmentError as error:
+            print(f"Label assignment failed: {error}")
+
     def _select_users(self, users: list[User]) -> list[int]:
         """Prompt user selection by comma-separated list."""
         print("Select project members by number, separated by commas:")
@@ -410,7 +465,16 @@ class HomeView:
     def _format_task(self, task: Task) -> str:
         """Return task display text with priority and optional due date."""
         due_date = f", due {task.due_date}" if task.due_date else ""
-        return f"[{task.priority}{due_date}] {task.title}: {task.description}"
+        labels = self._format_task_labels(task)
+        return f"[{task.priority}{due_date}{labels}] {task.title}: {task.description}"
+
+    def _format_task_labels(self, task: Task) -> str:
+        """Return formatted labels for task display."""
+        labels = self._label_service.list_labels_for_task(task.id)
+        if not labels:
+            return ""
+        label_names = ", ".join(label.name for label in labels)
+        return f", labels: {label_names}"
 
     def _format_project(self, project: Project) -> str:
         """Return project display text with priority and optional due date."""
@@ -433,3 +497,20 @@ class HomeView:
             print("Project selection failed: Selection out of range.")
             return None
         return projects[project_index]
+
+    def _select_label(self, labels: list[Label]) -> int | None:
+        """Prompt user to select one label by number."""
+        print("\nLabels")
+        for index, label in enumerate(labels, start=1):
+            print(f"{index}. {label.name}")
+
+        selection = input("Select label number: ").strip()
+        if not selection.isdigit():
+            print("Label selection failed: Invalid selection.")
+            return None
+
+        label_index = int(selection) - 1
+        if label_index < 0 or label_index >= len(labels):
+            print("Label selection failed: Selection out of range.")
+            return None
+        return labels[label_index].id

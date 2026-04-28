@@ -39,6 +39,25 @@ def _create_tables(connection: sqlite3.Connection) -> None:
     )
     connection.execute(
         """
+        CREATE TABLE IF NOT EXISTS labels (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE
+        )
+        """
+    )
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS task_labels (
+            task_id INTEGER NOT NULL,
+            label_id INTEGER NOT NULL,
+            PRIMARY KEY (task_id, label_id),
+            FOREIGN KEY (task_id) REFERENCES tasks(id),
+            FOREIGN KEY (label_id) REFERENCES labels(id)
+        )
+        """
+    )
+    connection.execute(
+        """
         CREATE TABLE IF NOT EXISTS tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,

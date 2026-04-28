@@ -241,6 +241,13 @@ class TaskRepository:
 
             connection.execute(
                 """
+                DELETE FROM task_labels
+                WHERE task_id = ?
+                """,
+                (task_id,),
+            )
+            connection.execute(
+                """
                 DELETE FROM task_participants
                 WHERE task_id = ?
                 """,
