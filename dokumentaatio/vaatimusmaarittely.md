@@ -23,9 +23,9 @@ Alkuvaiheessa sovelluksessa on yksi käyttäjärooli:
 - Käyttäjä voi poistaa tehtävän. (tehty)
 - Käyttäjä voi tarkastella kaikkia sovellukseen lisättyjä projekteja ja tehtäviä. (tehty omien projektien ja tehtävien osalta)
 - Käyttäjä voi hakea projekteja ja tehtäviä avainsanalla.
-- Käyttäjä voi asettaa projektille ja tehtävälle tärkeyden.
-- Käyttäjä voi asettaa projektille ja tehtävälle määräpäivän.
-- Käyttäjä voi asettaa tehtävälle leimoja.
+- Käyttäjä voi asettaa projektille ja tehtävälle tärkeyden. (tehty)
+- Käyttäjä voi asettaa projektille ja tehtävälle määräpäivän. (tehty)
+- Käyttäjä voi asettaa tehtävälle leimoja. (tehty)
 - Käyttäjä voi osallistua listattuihin tehtäviin. (tehty tehtävän luojan ja projektin jäsenten automaattisen osallistumisen osalta)
 - Käyttäjä näkee oman käyttäjäsivunsa, jossa näkyvät käyttäjän tilastot.
 - Käyttäjä voi kirjautua ulos järjestelmästä. (tehty)
