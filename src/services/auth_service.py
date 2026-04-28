@@ -22,7 +22,15 @@ class AuthenticationError(Exception):
 
 @dataclass
 class RegistrationInput:
-    """Registration payload for creating a new user account."""
+    """Registration payload for creating a new user account.
+
+    Attributes:
+        first_name: User's first name.
+        last_name: User's last name.
+        email: Email address used for sign-in.
+        password: Plain text password entered during registration.
+        confirm_password: Repeated password used to catch typing mistakes.
+    """
 
     first_name: str
     last_name: str
@@ -32,14 +40,29 @@ class RegistrationInput:
 
 
 class AuthService:
-    """Handles authentication-related application logic."""
+    """Handles registration and sign-in rules."""
 
     def __init__(self, user_repository: UserRepository | None = None) -> None:
-        """Create an auth service with an optional repository dependency."""
+        """Create an auth service.
+
+        Args:
+            user_repository: Repository used for user persistence. A default
+                repository is created when this is None.
+        """
         self._user_repository = user_repository or UserRepository()
 
     def register(self, registration: RegistrationInput) -> User:
-        """Validate input, create a new user, and return the stored user."""
+        """Validate input and create a new user.
+
+        Args:
+            registration: Registration fields entered by the user.
+
+        Returns:
+            Stored user with a database id and hashed password.
+
+        Raises:
+            RegistrationError: If any registration field is missing or invalid.
+        """
         normalized_first_name = registration.first_name.strip()
         normalized_last_name = registration.last_name.strip()
         normalized_email = registration.email.strip().lower()
@@ -59,7 +82,18 @@ class AuthService:
         return self._user_repository.create_user(user)
 
     def sign_in(self, email: str, password: str) -> User:
-        """Authenticate user by email and password and return the user."""
+        """Authenticate a user by email and password.
+
+        Args:
+            email: Email address entered by the user.
+            password: Plain text password entered by the user.
+
+        Returns:
+            Authenticated user.
+
+        Raises:
+            AuthenticationError: If credentials are missing or invalid.
+        """
         normalized_email = email.strip().lower()
         if not normalized_email or not password:
             raise AuthenticationError("Email and password are required.")

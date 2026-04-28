@@ -28,7 +28,15 @@ class TaskDeleteError(Exception):
 
 @dataclass
 class TaskCreationContext:
-    """Extra metadata for task creation."""
+    """Extra metadata for task creation.
+
+    Attributes:
+        creator_user_id: Id of the user creating the task.
+        project_id: Optional project id when the task is created inside a project.
+        participant_user_ids: Users who should see the created task.
+        priority: Requested task priority.
+        due_date: Optional due date in YYYY-MM-DD format.
+    """
 
     creator_user_id: int | None
     project_id: int | None = None
@@ -38,10 +46,15 @@ class TaskCreationContext:
 
 
 class TaskService:
-    """Handles task creation, update, completion, and deletion."""
+    """Handles task validation and task-related application rules."""
 
     def __init__(self, task_repository: TaskRepository | None = None) -> None:
-        """Create task service with optional repository dependency."""
+        """Create a task service.
+
+        Args:
+            task_repository: Repository used for task persistence. A default
+                repository is created when this is None.
+        """
         self._task_repository = task_repository or TaskRepository()
 
     def create_task(
@@ -50,7 +63,19 @@ class TaskService:
         description: str,
         context: TaskCreationContext,
     ) -> Task:
-        """Create a task and link creator as a participant."""
+        """Create a task and link it to its participants.
+
+        Args:
+            title: Task title entered by the user.
+            description: Task description entered by the user.
+            context: Metadata such as creator, project, priority, and due date.
+
+        Returns:
+            The stored task with its database id.
+
+        Raises:
+            TaskCreationError: If required input is missing or invalid.
+        """
         normalized_title = title.strip()
         normalized_description = description.strip()
 
@@ -112,7 +137,21 @@ class TaskService:
         title: str,
         description: str,
     ) -> Task:
-        """Edit task header and description for a participant user."""
+        """Edit a task's title and description for a participant user.
+
+        Args:
+            task_id: Id of the task being edited.
+            user_id: Id of the current user.
+            title: New task title.
+            description: New task description.
+
+        Returns:
+            The updated task.
+
+        Raises:
+            TaskEditError: If the task is missing, input is invalid, or the
+                user cannot edit the task.
+        """
         normalized_title = title.strip()
         normalized_description = description.strip()
 
@@ -142,7 +181,16 @@ class TaskService:
         return updated_task
 
     def complete_task(self, task_id: int, user_id: int | None) -> None:
-        """Mark task as completed for a participant user."""
+        """Mark a task as completed for a participant user.
+
+        Args:
+            task_id: Id of the task to complete.
+            user_id: Id of the current user.
+
+        Raises:
+            TaskCompleteError: If the task is missing, already completed, or
+                the user cannot access it.
+        """
         if user_id is None:
             raise TaskCompleteError("Signed-in user is required to complete a task.")
 
@@ -157,7 +205,15 @@ class TaskService:
             raise TaskCompleteError("Task completion failed.")
 
     def delete_task(self, task_id: int, user_id: int | None) -> None:
-        """Delete task for a participant user."""
+        """Delete a task for a participant user.
+
+        Args:
+            task_id: Id of the task to delete.
+            user_id: Id of the current user.
+
+        Raises:
+            TaskDeleteError: If the task is missing or the user cannot access it.
+        """
         if user_id is None:
             raise TaskDeleteError("Signed-in user is required to delete a task.")
 

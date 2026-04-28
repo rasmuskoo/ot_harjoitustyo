@@ -5,6 +5,7 @@
 .pylint.d
 htmlcov
 __pycache__
+docstring_review.md
 *.py[cod]
 *$py.class
 

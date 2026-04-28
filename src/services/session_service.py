@@ -4,24 +4,36 @@ from src.entities.user import User
 
 
 class SessionService:
-    """Tracks current authentication session in application memory."""
+    """Tracks the current authentication session in memory."""
 
     def __init__(self) -> None:
-        """Initialize session as signed out."""
+        """Create an empty signed-out session."""
         self._current_user: User | None = None
 
     def sign_in_user(self, user: User) -> None:
-        """Store authenticated user as current session user."""
+        """Store an authenticated user as the current user.
+
+        Args:
+            user: User returned by successful authentication.
+        """
         self._current_user = user
 
     def sign_out(self) -> None:
-        """Clear current session user."""
+        """Clear the current user from the session."""
         self._current_user = None
 
     def is_authenticated(self) -> bool:
-        """Return whether a user is currently signed in."""
+        """Return whether a user is currently signed in.
+
+        Returns:
+            True when a current user exists, otherwise False.
+        """
         return self._current_user is not None
 
     def get_current_user(self) -> User | None:
-        """Return currently authenticated user, if any."""
+        """Return the current user.
+
+        Returns:
+            Current user, or None when signed out.
+        """
         return self._current_user

@@ -5,10 +5,17 @@ from src.repositories.database import get_database_connection
 
 
 class TaskRepository:
-    """Provides task persistence operations."""
+    """Provides database operations for tasks and task participants."""
 
     def create_task(self, task: Task) -> Task:
-        """Insert a new task and return it with generated id."""
+        """Insert a new task.
+
+        Args:
+            task: Task data to store.
+
+        Returns:
+            Stored task with a database id.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -47,7 +54,12 @@ class TaskRepository:
         )
 
     def add_participant(self, task_id: int, user_id: int) -> None:
-        """Link a user as participant of a task."""
+        """Link a user as participant of a task.
+
+        Args:
+            task_id: Id of the task receiving the participant.
+            user_id: Id of the user being added.
+        """
         with get_database_connection() as connection:
             connection.execute(
                 """
@@ -59,7 +71,14 @@ class TaskRepository:
             connection.commit()
 
     def list_tasks_for_user(self, user_id: int) -> list[Task]:
-        """Return active tasks where the user is a listed participant."""
+        """Return active tasks where the user is a participant.
+
+        Args:
+            user_id: Id of the user whose active tasks are listed.
+
+        Returns:
+            Active tasks visible to the user.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -101,7 +120,14 @@ class TaskRepository:
         return tasks
 
     def list_completed_tasks_for_user(self, user_id: int) -> list[Task]:
-        """Return completed tasks where the user is a listed participant."""
+        """Return completed tasks where the user is a participant.
+
+        Args:
+            user_id: Id of the user whose completed tasks are listed.
+
+        Returns:
+            Completed tasks visible to the user.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -143,7 +169,15 @@ class TaskRepository:
         return tasks
 
     def find_task_for_user(self, task_id: int, user_id: int) -> Task | None:
-        """Return one task if the user is a participant."""
+        """Return one task if the user is a participant.
+
+        Args:
+            task_id: Id of the task being fetched.
+            user_id: Id of the user requesting the task.
+
+        Returns:
+            Matching task, or None when the user cannot access it.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -187,7 +221,17 @@ class TaskRepository:
         title: str,
         description: str,
     ) -> bool:
-        """Update a task header and description if user is a participant."""
+        """Update a task title and description if user is a participant.
+
+        Args:
+            task_id: Id of the task being updated.
+            user_id: Id of the user requesting the update.
+            title: New task title.
+            description: New task description.
+
+        Returns:
+            True when the task was updated, otherwise False.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -206,7 +250,15 @@ class TaskRepository:
         return cursor.rowcount > 0
 
     def complete_task_for_user(self, task_id: int, user_id: int) -> bool:
-        """Mark a task completed if the user is a participant."""
+        """Mark a task completed if the user is a participant.
+
+        Args:
+            task_id: Id of the task to complete.
+            user_id: Id of the user requesting completion.
+
+        Returns:
+            True when the task was completed, otherwise False.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -226,7 +278,15 @@ class TaskRepository:
         return cursor.rowcount > 0
 
     def delete_task_for_user(self, task_id: int, user_id: int) -> bool:
-        """Delete a task if the user is a participant."""
+        """Delete a task if the user is a participant.
+
+        Args:
+            task_id: Id of the task to delete.
+            user_id: Id of the user requesting deletion.
+
+        Returns:
+            True when the task was deleted, otherwise False.
+        """
         with get_database_connection() as connection:
             permission_cursor = connection.execute(
                 """
@@ -264,7 +324,12 @@ class TaskRepository:
         return delete_cursor.rowcount > 0
 
     def add_participants(self, task_id: int, user_ids: list[int]) -> None:
-        """Attach many users to a task participant list."""
+        """Attach many users to a task participant list.
+
+        Args:
+            task_id: Id of the task receiving participants.
+            user_ids: User ids to attach to the task.
+        """
         if not user_ids:
             return
 
@@ -279,7 +344,14 @@ class TaskRepository:
             connection.commit()
 
     def list_unassigned_tasks_for_user(self, user_id: int) -> list[Task]:
-        """Return tasks visible to user that are not yet linked to a project."""
+        """Return visible tasks that are not yet linked to a project.
+
+        Args:
+            user_id: Id of the user whose tasks are listed.
+
+        Returns:
+            User-visible tasks without a project link.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -319,7 +391,16 @@ class TaskRepository:
         ]
 
     def assign_task_to_project_for_user(self, task_id: int, project_id: int, user_id: int) -> bool:
-        """Link a task to a project if the user is already a participant."""
+        """Link a task to a project if the user is already a participant.
+
+        Args:
+            task_id: Id of the task being linked.
+            project_id: Id of the target project.
+            user_id: Id of the user requesting the change.
+
+        Returns:
+            True when the task was linked, otherwise False.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """

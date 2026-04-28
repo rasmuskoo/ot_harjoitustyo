@@ -9,13 +9,17 @@ DATABASE_PATH = DATA_DIR / "taskboard.db"
 
 
 def get_database_connection() -> sqlite3.Connection:
-    """SQLite connection to the app's database."""
+    """Open a SQLite connection to the application database.
+
+    Returns:
+        SQLite connection pointing to the configured database file.
+    """
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     return sqlite3.connect(DATABASE_PATH)
 
 
 def initialize_database() -> None:
-    """Create required database tables if they do not exist."""
+    """Create required tables and add missing columns for old databases."""
     with get_database_connection() as connection:
         _create_tables(connection)
         _migrate_tasks(connection)

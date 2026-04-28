@@ -5,10 +5,17 @@ from src.repositories.database import get_database_connection
 
 
 class UserRepository:
-    """Provides persistence operations for users."""
+    """Provides database operations for users."""
 
     def create_user(self, user: User) -> User:
-        """Insert a new user and return it with generated id."""
+        """Insert a new user.
+
+        Args:
+            user: User data to store.
+
+        Returns:
+            Stored user with a database id.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -35,7 +42,14 @@ class UserRepository:
         )
 
     def find_by_email(self, email: str) -> User | None:
-        """Find one user by email."""
+        """Find one user by email.
+
+        Args:
+            email: Email address used for lookup.
+
+        Returns:
+            Matching user, or None when no user exists.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -60,7 +74,11 @@ class UserRepository:
         )
 
     def list_users(self) -> list[User]:
-        """Return all registered users ordered by name."""
+        """Return all registered users ordered by name.
+
+        Returns:
+            Users ordered by first name, last name, and email.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """

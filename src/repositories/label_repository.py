@@ -5,10 +5,17 @@ from src.repositories.database import get_database_connection
 
 
 class LabelRepository:
-    """Provides label persistence operations."""
+    """Provides database operations for labels and task-label links."""
 
     def create_label(self, label: Label) -> Label:
-        """Insert a new label and return it with generated id."""
+        """Insert a new label.
+
+        Args:
+            label: Label data to store.
+
+        Returns:
+            Stored label with a database id.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -22,7 +29,14 @@ class LabelRepository:
         return Label(id=cursor.lastrowid, name=label.name)
 
     def find_by_name(self, name: str) -> Label | None:
-        """Return one label by exact normalized name."""
+        """Return one label by exact normalized name.
+
+        Args:
+            name: Normalized label name.
+
+        Returns:
+            Matching label, or None when no label exists.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -39,7 +53,14 @@ class LabelRepository:
         return Label(id=row[0], name=row[1])
 
     def find_by_id(self, label_id: int) -> Label | None:
-        """Return one label by id."""
+        """Return one label by id.
+
+        Args:
+            label_id: Label database id.
+
+        Returns:
+            Matching label, or None when no label exists.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -56,7 +77,11 @@ class LabelRepository:
         return Label(id=row[0], name=row[1])
 
     def list_labels(self) -> list[Label]:
-        """Return all labels ordered by name."""
+        """Return all labels ordered by name.
+
+        Returns:
+            Labels ordered alphabetically by name.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -70,7 +95,14 @@ class LabelRepository:
         return [Label(id=row[0], name=row[1]) for row in rows]
 
     def search_labels(self, query: str) -> list[Label]:
-        """Return labels whose names contain the query."""
+        """Return labels whose names contain the query.
+
+        Args:
+            query: Search text matched against label names.
+
+        Returns:
+            Labels whose names contain the query text.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -86,7 +118,12 @@ class LabelRepository:
         return [Label(id=row[0], name=row[1]) for row in rows]
 
     def add_label_to_task(self, task_id: int, label_id: int) -> None:
-        """Attach a label to a task."""
+        """Attach a label to a task.
+
+        Args:
+            task_id: Id of the task receiving the label.
+            label_id: Id of the label being attached.
+        """
         with get_database_connection() as connection:
             connection.execute(
                 """
@@ -98,7 +135,14 @@ class LabelRepository:
             connection.commit()
 
     def list_labels_for_task(self, task_id: int) -> list[Label]:
-        """Return labels attached to one task."""
+        """Return labels attached to one task.
+
+        Args:
+            task_id: Id of the task whose labels are listed.
+
+        Returns:
+            Labels attached to the task, ordered by name.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """

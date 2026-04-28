@@ -7,10 +7,17 @@ from src.repositories.database import get_database_connection
 
 
 class ProjectRepository:
-    """Provides project persistence operations."""
+    """Provides database operations for projects and project membership."""
 
     def create_project(self, project: Project) -> Project:
-        """Insert a new project and return it with generated id."""
+        """Insert a new project.
+
+        Args:
+            project: Project data to store.
+
+        Returns:
+            Stored project with a database id.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -37,7 +44,12 @@ class ProjectRepository:
         )
 
     def add_member(self, project_id: int, user_id: int) -> None:
-        """Attach a user to a project."""
+        """Attach a user to a project.
+
+        Args:
+            project_id: Id of the project receiving the member.
+            user_id: Id of the user being added.
+        """
         with get_database_connection() as connection:
             connection.execute(
                 """
@@ -49,7 +61,14 @@ class ProjectRepository:
             connection.commit()
 
     def list_projects_for_user(self, user_id: int) -> list[Project]:
-        """Return projects where the user is a member."""
+        """Return projects where the user is a member.
+
+        Args:
+            user_id: Id of the user whose projects are listed.
+
+        Returns:
+            Projects visible to the user.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -76,7 +95,15 @@ class ProjectRepository:
         ]
 
     def find_project_for_user(self, project_id: int, user_id: int) -> Project | None:
-        """Return one project if the user is a member."""
+        """Return one project if the user is a member.
+
+        Args:
+            project_id: Id of the project being fetched.
+            user_id: Id of the user requesting the project.
+
+        Returns:
+            Matching project, or None when the user cannot access it.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -102,7 +129,14 @@ class ProjectRepository:
         )
 
     def list_members(self, project_id: int) -> list[User]:
-        """Return project members ordered by name."""
+        """Return project members ordered by name.
+
+        Args:
+            project_id: Id of the project whose members are listed.
+
+        Returns:
+            Users who belong to the project.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -129,7 +163,14 @@ class ProjectRepository:
         ]
 
     def list_tasks(self, project_id: int) -> list[Task]:
-        """Return tasks linked to a project."""
+        """Return tasks linked to a project.
+
+        Args:
+            project_id: Id of the project whose tasks are listed.
+
+        Returns:
+            Tasks linked to the project.
+        """
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
@@ -167,7 +208,15 @@ class ProjectRepository:
         ]
 
     def delete_project_for_user(self, project_id: int, user_id: int) -> bool:
-        """Delete a project if the given user is its creator."""
+        """Delete a project if the given user is its creator.
+
+        Args:
+            project_id: Id of the project to delete.
+            user_id: Id of the user requesting deletion.
+
+        Returns:
+            True when the project was deleted, otherwise False.
+        """
         with get_database_connection() as connection:
             permission_cursor = connection.execute(
                 """

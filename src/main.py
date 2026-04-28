@@ -16,7 +16,11 @@ from src.ui.sign_up_view import SignUpView
 
 
 def _build_views() -> tuple[SignInView, HomeView]:
-    """Construct application repositories, services, and views."""
+    """Construct the application's repositories, services, and views.
+
+    Returns:
+        A tuple containing the sign-in view and the signed-in home view.
+    """
     auth_service = AuthService()
     session_service = SessionService()
     user_repository = UserRepository()
@@ -41,7 +45,7 @@ def _build_views() -> tuple[SignInView, HomeView]:
 
 
 def main() -> None:
-    """Start the application and run signed-in/signed-out flow."""
+    """Start the application and run the main signed-in and signed-out flow."""
     try:
         initialize_database()
         sign_in_view, home_view = _build_views()
