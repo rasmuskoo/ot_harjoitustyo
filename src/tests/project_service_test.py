@@ -7,6 +7,7 @@ from src.entities.task import Task
 from src.entities.user import User
 from src.services.project_service import (
     ProjectCreationError,
+    ProjectCreationContext,
     ProjectDeleteError,
     ProjectService,
     ProjectTaskError,
@@ -30,6 +31,7 @@ class FakeProjectRepository:
             name=project.name,
             created_by_user_id=project.created_by_user_id,
             priority=project.priority,
+            due_date=project.due_date,
             created_at=project.created_at,
         )
         self._projects[stored_project.id] = stored_project
@@ -93,6 +95,7 @@ class FakeProjectRepository:
                         created_by_user_id=task.created_by_user_id,
                         created_at=task.created_at,
                         priority=task.priority,
+                        due_date=task.due_date,
                         is_completed=task.is_completed,
                     )
         self._tasks.pop(project_id, None)
@@ -122,6 +125,7 @@ class FakeTaskRepository:
             created_by_user_id=task.created_by_user_id,
             created_at=task.created_at,
             priority=task.priority,
+            due_date=task.due_date,
             project_id=project_id,
             is_completed=task.is_completed,
         )
@@ -151,38 +155,83 @@ class TestProjectService(unittest.TestCase):
 
     def test_create_project_adds_owner_to_members(self):
         """Project creator should always become a member."""
-        project = self.project_service.create_project("Alpha", 1, [2, 3])
+        project = self.project_service.create_project(
+            "Alpha",
+            ProjectCreationContext(owner_user_id=1, member_user_ids=[2, 3]),
+        )
 
         self.assertIsNotNone(project.id)
         self.assertEqual(project.priority, "medium")
+        self.assertIsNone(project.due_date)
         member_ids = [member.id for member in self.project_repository.list_members(project.id)]
         self.assertEqual(member_ids, [1, 2, 3])
 
     def test_create_project_normalizes_priority(self):
         """Project creation should normalize priority input."""
-        project = self.project_service.create_project("Alpha", 1, [], priority=" HIGH ")
+        project = self.project_service.create_project(
+            "Alpha",
+            ProjectCreationContext(owner_user_id=1, member_user_ids=[], priority=" HIGH "),
+        )
 
         self.assertEqual(project.priority, "high")
 
     def test_create_project_with_empty_priority_uses_default(self):
         """Empty priority should use medium as default."""
-        project = self.project_service.create_project("Alpha", 1, [], priority="   ")
+        project = self.project_service.create_project(
+            "Alpha",
+            ProjectCreationContext(owner_user_id=1, member_user_ids=[], priority="   "),
+        )
 
         self.assertEqual(project.priority, "medium")
 
     def test_create_project_with_invalid_priority_raises_error(self):
         """Unsupported priority should fail project creation."""
         with self.assertRaises(ProjectCreationError):
-            self.project_service.create_project("Alpha", 1, [], priority="urgent")
+            self.project_service.create_project(
+                "Alpha",
+                ProjectCreationContext(owner_user_id=1, member_user_ids=[], priority="urgent"),
+            )
+
+    def test_create_project_with_due_date_success(self):
+        """Valid due date should be stored for created project."""
+        project = self.project_service.create_project(
+            "Alpha",
+            ProjectCreationContext(owner_user_id=1, member_user_ids=[], due_date="2026-05-01"),
+        )
+
+        self.assertEqual(project.due_date, "2026-05-01")
+
+    def test_create_project_with_empty_due_date_uses_none(self):
+        """Empty due date should be stored as none."""
+        project = self.project_service.create_project(
+            "Alpha",
+            ProjectCreationContext(owner_user_id=1, member_user_ids=[], due_date="   "),
+        )
+
+        self.assertIsNone(project.due_date)
+
+    def test_create_project_with_invalid_due_date_raises_error(self):
+        """Invalid due date format should fail project creation."""
+        with self.assertRaises(ProjectCreationError):
+            self.project_service.create_project(
+                "Alpha",
+                ProjectCreationContext(owner_user_id=1, member_user_ids=[], due_date="01.05.2026"),
+            )
 
     def test_create_project_with_empty_name_raises_error(self):
         """Blank project name should fail."""
         with self.assertRaises(ProjectCreationError):
-            self.project_service.create_project("   ", 1, [])
+            self.project_service.create_project(
+                "   ",
+                ProjectCreationContext(owner_user_id=1, member_user_ids=[]),
+            )
 
     def test_add_existing_task_to_project_adds_all_project_members_as_participants(self):
         """Existing task linked to project should become visible to all project members."""
-        project = self.project_service.create_project("Alpha", 1, [2])
+        project = self.project_service.create_project(
+            "Alpha",
+            ProjectCreationContext(owner_user_id=1, member_user_ids=[2]),
+        )
         self.task_repository._tasks[5] = Task(
             id=5,
             title="Task",
@@ -190,6 +239,7 @@ class TestProjectService(unittest.TestCase):
             created_by_user_id=1,
             created_at="now",
             priority="high",
+            due_date="2026-05-01",
         )
         self.task_repository._participants[5] = {1}
 
@@ -197,18 +247,25 @@ class TestProjectService(unittest.TestCase):
 
         self.assertEqual(self.task_repository._tasks[5].project_id, project.id)
         self.assertEqual(self.task_repository._tasks[5].priority, "high")
+        self.assertEqual(self.task_repository._tasks[5].due_date, "2026-05-01")
         self.assertEqual(self.task_repository._participants[5], {1, 2})
 
     def test_get_project_details_requires_membership(self):
         """Project details should be restricted to members."""
-        project = self.project_service.create_project("Alpha", 1, [])
+        project = self.project_service.create_project(
+            "Alpha",
+            ProjectCreationContext(owner_user_id=1, member_user_ids=[]),
+        )
 
         with self.assertRaises(ProjectTaskError):
             self.project_service.get_project_details(project.id, 2)
 
     def test_project_creator_can_delete_project(self):
         """Project creator should be able to delete a project."""
-        project = self.project_service.create_project("Alpha", 1, [2])
+        project = self.project_service.create_project(
+            "Alpha",
+            ProjectCreationContext(owner_user_id=1, member_user_ids=[2]),
+        )
 
         self.project_service.delete_project(project.id, 1)
 
@@ -216,7 +273,10 @@ class TestProjectService(unittest.TestCase):
 
     def test_non_creator_cannot_delete_project(self):
         """Non-creator member should not be able to delete a project."""
-        project = self.project_service.create_project("Alpha", 1, [2])
+        project = self.project_service.create_project(
+            "Alpha",
+            ProjectCreationContext(owner_user_id=1, member_user_ids=[2]),
+        )
 
         with self.assertRaises(ProjectDeleteError):
             self.project_service.delete_project(project.id, 2)

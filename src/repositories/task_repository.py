@@ -18,9 +18,10 @@ class TaskRepository:
                     created_by_user_id,
                     project_id,
                     priority,
+                    due_date,
                     created_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     task.title,
@@ -28,6 +29,7 @@ class TaskRepository:
                     task.created_by_user_id,
                     task.project_id,
                     task.priority,
+                    task.due_date,
                     task.created_at,
                 ),
             )
@@ -40,6 +42,7 @@ class TaskRepository:
             created_by_user_id=task.created_by_user_id,
             created_at=task.created_at,
             priority=task.priority,
+            due_date=task.due_date,
             project_id=task.project_id,
         )
 
@@ -67,6 +70,7 @@ class TaskRepository:
                     t.created_by_user_id,
                     t.created_at,
                     t.priority,
+                    t.due_date,
                     t.project_id,
                     t.is_completed
                 FROM tasks t
@@ -89,8 +93,9 @@ class TaskRepository:
                     created_by_user_id=row[3],
                     created_at=row[4],
                     priority=row[5],
-                    project_id=row[6],
-                    is_completed=bool(row[7]),
+                    due_date=row[6],
+                    project_id=row[7],
+                    is_completed=bool(row[8]),
                 )
             )
         return tasks
@@ -107,6 +112,7 @@ class TaskRepository:
                     t.created_by_user_id,
                     t.created_at,
                     t.priority,
+                    t.due_date,
                     t.project_id,
                     t.is_completed
                 FROM tasks t
@@ -129,8 +135,9 @@ class TaskRepository:
                     created_by_user_id=row[3],
                     created_at=row[4],
                     priority=row[5],
-                    project_id=row[6],
-                    is_completed=bool(row[7]),
+                    due_date=row[6],
+                    project_id=row[7],
+                    is_completed=bool(row[8]),
                 )
             )
         return tasks
@@ -147,6 +154,7 @@ class TaskRepository:
                     t.created_by_user_id,
                     t.created_at,
                     t.priority,
+                    t.due_date,
                     t.project_id,
                     t.is_completed
                 FROM tasks t
@@ -167,8 +175,9 @@ class TaskRepository:
             created_by_user_id=row[3],
             created_at=row[4],
             priority=row[5],
-            project_id=row[6],
-            is_completed=bool(row[7]),
+            due_date=row[6],
+            project_id=row[7],
+            is_completed=bool(row[8]),
         )
 
     def update_task_for_user(
@@ -274,6 +283,7 @@ class TaskRepository:
                     t.created_by_user_id,
                     t.created_at,
                     t.priority,
+                    t.due_date,
                     t.project_id,
                     t.is_completed
                 FROM tasks t
@@ -294,8 +304,9 @@ class TaskRepository:
                 created_by_user_id=row[3],
                 created_at=row[4],
                 priority=row[5],
-                project_id=row[6],
-                is_completed=bool(row[7]),
+                due_date=row[6],
+                project_id=row[7],
+                is_completed=bool(row[8]),
             )
             for row in rows
         ]

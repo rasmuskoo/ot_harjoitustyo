@@ -14,13 +14,14 @@ class ProjectRepository:
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
-                INSERT INTO projects (name, created_by_user_id, priority, created_at)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO projects (name, created_by_user_id, priority, due_date, created_at)
+                VALUES (?, ?, ?, ?, ?)
                 """,
                 (
                     project.name,
                     project.created_by_user_id,
                     project.priority,
+                    project.due_date,
                     project.created_at,
                 ),
             )
@@ -31,6 +32,7 @@ class ProjectRepository:
             name=project.name,
             created_by_user_id=project.created_by_user_id,
             priority=project.priority,
+            due_date=project.due_date,
             created_at=project.created_at,
         )
 
@@ -51,7 +53,7 @@ class ProjectRepository:
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
-                SELECT p.id, p.name, p.created_by_user_id, p.priority, p.created_at
+                SELECT p.id, p.name, p.created_by_user_id, p.priority, p.due_date, p.created_at
                 FROM projects p
                 INNER JOIN project_members pm ON pm.project_id = p.id
                 WHERE pm.user_id = ?
@@ -67,7 +69,8 @@ class ProjectRepository:
                 name=row[1],
                 created_by_user_id=row[2],
                 priority=row[3],
-                created_at=row[4],
+                due_date=row[4],
+                created_at=row[5],
             )
             for row in rows
         ]
@@ -77,7 +80,7 @@ class ProjectRepository:
         with get_database_connection() as connection:
             cursor = connection.execute(
                 """
-                SELECT p.id, p.name, p.created_by_user_id, p.priority, p.created_at
+                SELECT p.id, p.name, p.created_by_user_id, p.priority, p.due_date, p.created_at
                 FROM projects p
                 INNER JOIN project_members pm ON pm.project_id = p.id
                 WHERE p.id = ? AND pm.user_id = ?
@@ -94,7 +97,8 @@ class ProjectRepository:
             name=row[1],
             created_by_user_id=row[2],
             priority=row[3],
-            created_at=row[4],
+            due_date=row[4],
+            created_at=row[5],
         )
 
     def list_members(self, project_id: int) -> list[User]:
@@ -136,6 +140,7 @@ class ProjectRepository:
                     created_by_user_id,
                     created_at,
                     priority,
+                    due_date,
                     project_id,
                     is_completed
                 FROM tasks
@@ -154,8 +159,9 @@ class ProjectRepository:
                 created_by_user_id=row[3],
                 created_at=row[4],
                 priority=row[5],
-                project_id=row[6],
-                is_completed=bool(row[7]),
+                due_date=row[6],
+                project_id=row[7],
+                is_completed=bool(row[8]),
             )
             for row in rows
         ]

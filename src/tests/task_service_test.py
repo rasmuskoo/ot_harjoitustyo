@@ -34,6 +34,7 @@ class FakeTaskRepository:
             created_by_user_id=task.created_by_user_id,
             created_at=task.created_at,
             priority=task.priority,
+            due_date=task.due_date,
             project_id=task.project_id,
             is_completed=task.is_completed,
         )
@@ -76,6 +77,7 @@ class FakeTaskRepository:
             created_by_user_id=task.created_by_user_id,
             created_at=task.created_at,
             priority=task.priority,
+            due_date=task.due_date,
             project_id=task.project_id,
             is_completed=task.is_completed,
         )
@@ -94,6 +96,7 @@ class FakeTaskRepository:
             created_by_user_id=task.created_by_user_id,
             created_at=task.created_at,
             priority=task.priority,
+            due_date=task.due_date,
             project_id=task.project_id,
             is_completed=True,
         )
@@ -130,6 +133,7 @@ class TestTaskService(unittest.TestCase):
         self.assertEqual(task.title, "Header")
         self.assertEqual(task.description, "Description")
         self.assertEqual(task.priority, "medium")
+        self.assertIsNone(task.due_date)
 
     def test_create_task_normalizes_priority(self):
         """Task creation should normalize priority input."""
@@ -150,6 +154,35 @@ class TestTaskService(unittest.TestCase):
         )
 
         self.assertEqual(task.priority, "medium")
+
+    def test_create_task_with_due_date_success(self):
+        """Valid due date should be stored for created task."""
+        task = self.task_service.create_task(
+            "Header",
+            "Description",
+            TaskCreationContext(creator_user_id=1, due_date="2026-05-01"),
+        )
+
+        self.assertEqual(task.due_date, "2026-05-01")
+
+    def test_create_task_with_empty_due_date_uses_none(self):
+        """Empty due date should be stored as none."""
+        task = self.task_service.create_task(
+            "Header",
+            "Description",
+            TaskCreationContext(creator_user_id=1, due_date="   "),
+        )
+
+        self.assertIsNone(task.due_date)
+
+    def test_create_task_with_invalid_due_date_raises_error(self):
+        """Invalid due date format should fail task creation."""
+        with self.assertRaises(TaskCreationError):
+            self.task_service.create_task(
+                "Header",
+                "Description",
+                TaskCreationContext(creator_user_id=1, due_date="01.05.2026"),
+            )
 
     def test_create_task_with_invalid_priority_raises_error(self):
         """Unsupported priority should fail task creation."""
@@ -183,6 +216,7 @@ class TestTaskService(unittest.TestCase):
 
         self.assertEqual(task.project_id, 2)
         self.assertEqual(task.priority, "medium")
+        self.assertIsNone(task.due_date)
         self.assertEqual(self.task_repository._participants[task.id], {1, 2, 3})
 
     def test_edit_task_success(self):

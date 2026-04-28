@@ -11,4 +11,5 @@ class Project:
     created_by_user_id: int
     created_at: str
     priority: str = "medium"
+    due_date: str | None = None
     id: int | None = None

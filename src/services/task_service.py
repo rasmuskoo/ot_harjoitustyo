@@ -34,6 +34,7 @@ class TaskCreationContext:
     project_id: int | None = None
     participant_user_ids: list[int] | None = None
     priority: str = DEFAULT_PRIORITY
+    due_date: str = ""
 
 
 class TaskService:
@@ -61,12 +62,14 @@ class TaskService:
             raise TaskCreationError("Signed-in user is required to create a task.")
 
         priority = self._normalize_priority(context.priority)
+        due_date = self._normalize_due_date(context.due_date)
         task = Task(
             title=normalized_title,
             description=normalized_description,
             created_by_user_id=context.creator_user_id,
             created_at=datetime.now(timezone.utc).isoformat(),
             priority=priority,
+            due_date=due_date,
             project_id=context.project_id,
         )
         created_task = self._task_repository.create_task(task)
@@ -89,6 +92,18 @@ class TaskService:
             allowed_priorities = ", ".join(sorted(VALID_PRIORITIES))
             raise TaskCreationError(f"Priority must be one of: {allowed_priorities}.")
         return normalized_priority
+
+    def _normalize_due_date(self, due_date: str) -> str | None:
+        """Return normalized due date or raise validation error."""
+        normalized_due_date = due_date.strip()
+        if not normalized_due_date:
+            return None
+
+        try:
+            datetime.strptime(normalized_due_date, "%Y-%m-%d")
+        except ValueError as error:
+            raise TaskCreationError("Due date must use YYYY-MM-DD format.") from error
+        return normalized_due_date
 
     def edit_task(
         self,
