@@ -29,6 +29,7 @@ class FakeProjectRepository:
             id=self._next_id,
             name=project.name,
             created_by_user_id=project.created_by_user_id,
+            priority=project.priority,
             created_at=project.created_at,
         )
         self._projects[stored_project.id] = stored_project
@@ -91,6 +92,7 @@ class FakeProjectRepository:
                         description=task.description,
                         created_by_user_id=task.created_by_user_id,
                         created_at=task.created_at,
+                        priority=task.priority,
                         is_completed=task.is_completed,
                     )
         self._tasks.pop(project_id, None)
@@ -119,6 +121,7 @@ class FakeTaskRepository:
             description=task.description,
             created_by_user_id=task.created_by_user_id,
             created_at=task.created_at,
+            priority=task.priority,
             project_id=project_id,
             is_completed=task.is_completed,
         )
@@ -151,8 +154,26 @@ class TestProjectService(unittest.TestCase):
         project = self.project_service.create_project("Alpha", 1, [2, 3])
 
         self.assertIsNotNone(project.id)
+        self.assertEqual(project.priority, "medium")
         member_ids = [member.id for member in self.project_repository.list_members(project.id)]
         self.assertEqual(member_ids, [1, 2, 3])
+
+    def test_create_project_normalizes_priority(self):
+        """Project creation should normalize priority input."""
+        project = self.project_service.create_project("Alpha", 1, [], priority=" HIGH ")
+
+        self.assertEqual(project.priority, "high")
+
+    def test_create_project_with_empty_priority_uses_default(self):
+        """Empty priority should use medium as default."""
+        project = self.project_service.create_project("Alpha", 1, [], priority="   ")
+
+        self.assertEqual(project.priority, "medium")
+
+    def test_create_project_with_invalid_priority_raises_error(self):
+        """Unsupported priority should fail project creation."""
+        with self.assertRaises(ProjectCreationError):
+            self.project_service.create_project("Alpha", 1, [], priority="urgent")
 
     def test_create_project_with_empty_name_raises_error(self):
         """Blank project name should fail."""
@@ -168,12 +189,14 @@ class TestProjectService(unittest.TestCase):
             description="Description",
             created_by_user_id=1,
             created_at="now",
+            priority="high",
         )
         self.task_repository._participants[5] = {1}
 
         self.project_service.add_existing_task_to_project(project.id, 5, 1)
 
         self.assertEqual(self.task_repository._tasks[5].project_id, project.id)
+        self.assertEqual(self.task_repository._tasks[5].priority, "high")
         self.assertEqual(self.task_repository._participants[5], {1, 2})
 
     def test_get_project_details_requires_membership(self):

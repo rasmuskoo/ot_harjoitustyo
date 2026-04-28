@@ -18,5 +18,6 @@
 |  | 1h | Käyttäjien ja tehtävien liittäminen projekteihin |
 |  | 3h | Uusien testien luonti jotta kattavuus saadaan yli 50% |
 |  | 0,5h | Lopuksi vielä dokumentaation päivitys ja tarkastus |
+| 28.4.2026 | 0,5h | Viikon 5 palautteen mukaiset korjaukset |
 | --- | --- | --- |
 | Yhteensä | 19,5h |  |

@@ -9,6 +9,9 @@ from src.entities.user import User
 from src.repositories.project_repository import ProjectRepository
 from src.repositories.task_repository import TaskRepository
 
+VALID_PRIORITIES = {"low", "medium", "high"}
+DEFAULT_PRIORITY = "medium"
+
 
 class ProjectCreationError(Exception):
     """Raised when project creation validation fails."""
@@ -48,6 +51,7 @@ class ProjectService:
         name: str,
         owner_user_id: int | None,
         member_user_ids: list[int],
+        priority: str = DEFAULT_PRIORITY,
     ) -> Project:
         """Create a project and attach selected members."""
         normalized_name = name.strip()
@@ -56,6 +60,7 @@ class ProjectService:
         if not normalized_name:
             raise ProjectCreationError("Project name is required.")
 
+        normalized_priority = self._normalize_priority(priority)
         unique_member_ids = list(dict.fromkeys(member_user_ids))
         if owner_user_id not in unique_member_ids:
             unique_member_ids.insert(0, owner_user_id)
@@ -64,6 +69,7 @@ class ProjectService:
             name=normalized_name,
             created_by_user_id=owner_user_id,
             created_at=datetime.now(timezone.utc).isoformat(),
+            priority=normalized_priority,
         )
         created_project = self._project_repository.create_project(project)
         if created_project.id is None:
@@ -125,3 +131,11 @@ class ProjectService:
         was_deleted = self._project_repository.delete_project_for_user(project_id, user_id)
         if not was_deleted:
             raise ProjectDeleteError("Only the project creator can delete the project.")
+
+    def _normalize_priority(self, priority: str) -> str:
+        """Return normalized priority or raise validation error."""
+        normalized_priority = priority.strip().lower() or DEFAULT_PRIORITY
+        if normalized_priority not in VALID_PRIORITIES:
+            allowed_priorities = ", ".join(sorted(VALID_PRIORITIES))
+            raise ProjectCreationError(f"Priority must be one of: {allowed_priorities}.")
+        return normalized_priority

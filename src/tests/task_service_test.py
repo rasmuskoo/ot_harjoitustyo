@@ -33,6 +33,7 @@ class FakeTaskRepository:
             description=task.description,
             created_by_user_id=task.created_by_user_id,
             created_at=task.created_at,
+            priority=task.priority,
             project_id=task.project_id,
             is_completed=task.is_completed,
         )
@@ -74,6 +75,7 @@ class FakeTaskRepository:
             description=description,
             created_by_user_id=task.created_by_user_id,
             created_at=task.created_at,
+            priority=task.priority,
             project_id=task.project_id,
             is_completed=task.is_completed,
         )
@@ -91,6 +93,7 @@ class FakeTaskRepository:
             description=task.description,
             created_by_user_id=task.created_by_user_id,
             created_at=task.created_at,
+            priority=task.priority,
             project_id=task.project_id,
             is_completed=True,
         )
@@ -126,6 +129,36 @@ class TestTaskService(unittest.TestCase):
         self.assertIsNotNone(task.id)
         self.assertEqual(task.title, "Header")
         self.assertEqual(task.description, "Description")
+        self.assertEqual(task.priority, "medium")
+
+    def test_create_task_normalizes_priority(self):
+        """Task creation should normalize priority input."""
+        task = self.task_service.create_task(
+            "Header",
+            "Description",
+            TaskCreationContext(creator_user_id=1, priority=" HIGH "),
+        )
+
+        self.assertEqual(task.priority, "high")
+
+    def test_create_task_with_empty_priority_uses_default(self):
+        """Empty priority should use medium as default."""
+        task = self.task_service.create_task(
+            "Header",
+            "Description",
+            TaskCreationContext(creator_user_id=1, priority="   "),
+        )
+
+        self.assertEqual(task.priority, "medium")
+
+    def test_create_task_with_invalid_priority_raises_error(self):
+        """Unsupported priority should fail task creation."""
+        with self.assertRaises(TaskCreationError):
+            self.task_service.create_task(
+                "Header",
+                "Description",
+                TaskCreationContext(creator_user_id=1, priority="urgent"),
+            )
 
     def test_create_task_with_empty_header_raises_error(self):
         """Empty header should fail task creation."""
@@ -149,6 +182,7 @@ class TestTaskService(unittest.TestCase):
         )
 
         self.assertEqual(task.project_id, 2)
+        self.assertEqual(task.priority, "medium")
         self.assertEqual(self.task_repository._participants[task.id], {1, 2, 3})
 
     def test_edit_task_success(self):

@@ -6,6 +6,9 @@ from datetime import datetime, timezone
 from src.entities.task import Task
 from src.repositories.task_repository import TaskRepository
 
+VALID_PRIORITIES = {"low", "medium", "high"}
+DEFAULT_PRIORITY = "medium"
+
 
 class TaskCreationError(Exception):
     """Raised when task creation validation fails."""
@@ -30,6 +33,7 @@ class TaskCreationContext:
     creator_user_id: int | None
     project_id: int | None = None
     participant_user_ids: list[int] | None = None
+    priority: str = DEFAULT_PRIORITY
 
 
 class TaskService:
@@ -56,11 +60,13 @@ class TaskService:
         if context.creator_user_id is None:
             raise TaskCreationError("Signed-in user is required to create a task.")
 
+        priority = self._normalize_priority(context.priority)
         task = Task(
             title=normalized_title,
             description=normalized_description,
             created_by_user_id=context.creator_user_id,
             created_at=datetime.now(timezone.utc).isoformat(),
+            priority=priority,
             project_id=context.project_id,
         )
         created_task = self._task_repository.create_task(task)
@@ -75,6 +81,14 @@ class TaskService:
 
         self._task_repository.add_participants(created_task.id, participant_ids)
         return created_task
+
+    def _normalize_priority(self, priority: str) -> str:
+        """Return normalized priority or raise validation error."""
+        normalized_priority = priority.strip().lower() or DEFAULT_PRIORITY
+        if normalized_priority not in VALID_PRIORITIES:
+            allowed_priorities = ", ".join(sorted(VALID_PRIORITIES))
+            raise TaskCreationError(f"Priority must be one of: {allowed_priorities}.")
+        return normalized_priority
 
     def edit_task(
         self,

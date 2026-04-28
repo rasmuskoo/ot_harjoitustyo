@@ -111,12 +111,12 @@ class HomeView:
         else:
             print("Your tasks:")
             for index, task in enumerate(tasks, start=1):
-                print(f"{index}. {task.title}: {task.description}")
+                print(f"{index}. [{task.priority}] {task.title}: {task.description}")
 
         if projects:
             print("Your projects:")
             for index, project in enumerate(projects, start=1):
-                print(f"{index}. {project.name}")
+                print(f"{index}. [{project.priority}] {project.name}")
         else:
             print("No projects found for your account.")
         return tasks
@@ -136,12 +136,13 @@ class HomeView:
         print("\nCreate Task")
         header = input("Header: ")
         description = input("Description: ")
+        priority = self._prompt_priority()
 
         try:
             task = self._task_service.create_task(
                 title=header,
                 description=description,
-                context=TaskCreationContext(creator_user_id=user_id),
+                context=TaskCreationContext(creator_user_id=user_id, priority=priority),
             )
             print(f"Task created: {task.title}")
         except TaskCreationError as error:
@@ -235,12 +236,13 @@ class HomeView:
             return
 
         for index, task in enumerate(completed_tasks, start=1):
-            print(f"{index}. {task.title}: {task.description}")
+            print(f"{index}. [{task.priority}] {task.title}: {task.description}")
 
     def _handle_create_project(self, user_id: int | None) -> None:
         """Prompt for project fields and create a project."""
         print("\nCreate Project")
         name = input("Project name: ")
+        priority = self._prompt_priority()
         users = self._user_repository.list_users()
         if not users:
             print("Project creation failed: No users available.")
@@ -248,7 +250,12 @@ class HomeView:
 
         selected_user_ids = self._select_users(users)
         try:
-            project = self._project_service.create_project(name, user_id, selected_user_ids)
+            project = self._project_service.create_project(
+                name,
+                user_id,
+                selected_user_ids,
+                priority=priority,
+            )
             print(f"Project created: {project.name}")
         except ProjectCreationError as error:
             print(f"Project creation failed: {error}")
@@ -283,7 +290,7 @@ class HomeView:
 
     def _render_project(self, details: ProjectDetails) -> None:
         """Print project details, members, and tasks."""
-        print(f"\nProject: {details.project.name}")
+        print(f"\nProject: [{details.project.priority}] {details.project.name}")
         print("Members:")
         for index, member in enumerate(details.members, start=1):
             print(f"{index}. {member.first_name} {member.last_name} ({member.email})")
@@ -294,13 +301,14 @@ class HomeView:
             return
 
         for index, task in enumerate(details.tasks, start=1):
-            print(f"{index}. {task.title}: {task.description}")
+            print(f"{index}. [{task.priority}] {task.title}: {task.description}")
 
     def _handle_create_task_for_project(self, details: ProjectDetails, user_id: int | None) -> None:
         """Prompt for fields and create a new task inside a project."""
         print("\nCreate Project Task")
         header = input("Header: ")
         description = input("Description: ")
+        priority = self._prompt_priority()
         member_ids = [member.id for member in details.members if member.id is not None]
 
         try:
@@ -311,6 +319,7 @@ class HomeView:
                     creator_user_id=user_id,
                     project_id=details.project.id,
                     participant_user_ids=member_ids,
+                    priority=priority,
                 ),
             )
             print(f"Task created in project: {task.title}")
@@ -378,11 +387,15 @@ class HomeView:
                 selected_user_ids.append(users[user_index].id)
         return selected_user_ids
 
+    def _prompt_priority(self) -> str:
+        """Prompt priority value for task or project creation."""
+        return input("Priority (low/medium/high, empty=medium): ").strip()
+
     def _select_project(self, projects: list[Project]) -> Project | None:
         """Prompt user to select one project by number."""
         print("\nProjects")
         for index, project in enumerate(projects, start=1):
-            print(f"{index}. {project.name}")
+            print(f"{index}. [{project.priority}] {project.name}")
 
         selection = input("Select project number: ").strip()
         if not selection.isdigit():
