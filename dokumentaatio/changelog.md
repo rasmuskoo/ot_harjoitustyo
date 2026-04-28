@@ -31,3 +31,15 @@
 - Lisätty projektien luominen ja poistaminen ohjelmaan
 - Lisätty käyttäjien liittäminen projekteihin
 - Lisätty tehtävien luominen ja liittäminen projekteihin
+
+## Viikko 6
+
+- Lisätty tehtäville ja projekteille tärkeysluokittelut: low, medium ja high
+- Lisätty tehtäville ja projekteille vapaaehtoinen due date
+- Lisätty leimojen luominen (Labels)
+    - Lisätty leimojen liittäminen tehtäviin
+    - Lisätty leimojen listaaminen tehtävien yhteydessä
+- Nostettu testikattavuus yli 60 prosentin vaatimuksen
+    - Lisätty uusia testejä palvelu- ja repository-kerroksiin
+- Lisätty docstring dokumentaatiota
+- Lisätty käyttöohje-tiedosto

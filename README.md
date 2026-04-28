@@ -8,11 +8,13 @@ TaskBoard on Pythonilla toteutettu komentorivisovellus tehtävien ja projektien 
 
 - [vaatimusmaarittely](dokumentaatio/vaatimusmaarittely.md)
 - [arkkitehtuuri](dokumentaatio/arkkitehtuuri.md)
+- [kayttoohje](dokumentaatio/kayttoohje.md)
 - [tyoaikakirjanpito](dokumentaatio/tyoaikakirjanpito.md)
 - [changelog](dokumentaatio/changelog.md)
 
 ## GitHub Release
-- [Viiko 5 release](https://github.com/rasmuskoo/ot_harjoitustyo/releases/tag/viikko5)
+- [Viikko 5 release](https://github.com/rasmuskoo/ot_harjoitustyo/releases/tag/viikko5)
+- [Viikko 6 release](https://github.com/rasmuskoo/ot_harjoitustyo/releases/tag/viikko6)
 
 ## Asennus
 

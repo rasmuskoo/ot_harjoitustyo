@@ -19,5 +19,11 @@
 |  | 3h | Uusien testien luonti jotta kattavuus saadaan yli 50% |
 |  | 0,5h | Lopuksi vielä dokumentaation päivitys ja tarkastus |
 | 28.4.2026 | 0,5h | Viikon 5 palautteen mukaiset korjaukset |
+|  | 1,5h | Tehtävien ja projektien priority luokittelun toteutus ja siihen liittyvät testit |
+|  | 1,5h | Tehtävien ja projektien due date toteutus ja siihen liittyvät testit |
+|  | 2h | Leimojen (Labels) luominen, tehtäviin liittäminen ja niihin liittyvät testit |
+|  | 1h | Testauksen coveragen nostaminen viikon vaatimustason yläpuolelle |
+|  | 1h | Docstring dokumentaation lisääminen |
+|  | 0,5h | Käyttöohje ja dokumentaation täydennys |
 | --- | --- | --- |
-| Yhteensä | 19,5h |  |
+| Yhteensä | 27,5h |  |
