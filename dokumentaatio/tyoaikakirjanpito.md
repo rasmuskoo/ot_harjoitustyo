@@ -28,5 +28,7 @@
 | 9.5.2026 | 1h | Hakutoiminnon tekeminen |
 |  | 1h | käyttäjäsivujen luonti |
 |  | 1h | Uusi graafinen käyttöliittymä |
+|  | 1h | Tarkastuksia ja viimeistelyjä loppupalautukseen |
+|  | 1h | Dokumentaation päivitys |
 | --- | --- | --- |
-| Yhteensä | 27,5h |  |
+| Yhteensä | 32,5h |  |

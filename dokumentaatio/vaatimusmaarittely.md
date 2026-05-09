@@ -1,7 +1,7 @@
 # Vaatimusmäärittely
 
 ## Sovelluksen tarkoitus
-TaskBoard on työpöytäsovellusversio, jonka avulla käyttäjät voivat hallita tehtäviään yhdessä paikassa. Sovelluksella voi luoda ja ylläpitää tehtäviä, asettaa niille tärkeyden ja määräpäivän sekä seurata omaa tehtävätilannetta käyttäjäsivujen kautta. TaskBoard poikkeaa perinteisestä to-do sovelluksesta sillä, että se on tarkoitettu organisaatio/tiimikäyttöön. 
+TaskBoard on työpöytäsovellus, jonka avulla käyttäjät voivat hallita tehtäviään yhdessä paikassa. Sovelluksella voi luoda ja ylläpitää tehtäviä, asettaa niille tärkeyden, määräpäivän ja leimoja sekä seurata käyttäjien osallistumista tehtäviin ja projekteihin käyttäjäsivujen kautta. TaskBoard poikkeaa perinteisestä to-do-sovelluksesta sillä, että se on tarkoitettu organisaatio- ja tiimikäyttöön.
 
 ## Käyttäjät
 Alkuvaiheessa sovelluksessa on yksi käyttäjärooli:
@@ -27,7 +27,7 @@ Alkuvaiheessa sovelluksessa on yksi käyttäjärooli:
 - Käyttäjä voi asettaa projektille ja tehtävälle määräpäivän. (tehty)
 - Käyttäjä voi asettaa tehtävälle leimoja. (tehty)
 - Käyttäjä voi osallistua listattuihin tehtäviin. (tehty tehtävän luojan ja projektin jäsenten automaattisen osallistumisen osalta)
-- Käyttäjä näkee oman käyttäjäsivunsa, jossa näkyvät käyttäjän tilastot. (tehty)
+- Käyttäjä näkee oman käyttäjäsivunsa, jossa näkyvät projektit ja tehtävät, joissa käyttäjä on osallisena. (tehty)
 - Käyttäjä voi kirjautua ulos järjestelmästä. (tehty)
 
 ## Jatkokehitysideoita
@@ -36,3 +36,4 @@ Perusversion jälkeen sovellusta voidaan laajentaa esimerkiksi seuraavilla toimi
 - Tehtävien tilaluokittelu (esim. tekemättä, työn alla, valmis).
 - Tehtävien lajittelu ja suodatus useilla ehdoilla (tärkeys, määräpäivä, luoja).
 - Tehtävien kommentointi ja keskusteluketjut.
+- Käyttäjäsivun tilastot, kuten valmiiden ja keskeneräisten tehtävien lukumäärät.

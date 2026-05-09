@@ -48,4 +48,11 @@
 
 - Lisätty hakutoiminto josta voi hakea tehtäviä ja projekteja
 - Lisätty käyttäjäsivut joista näkee käyttäjän osallistumisen projekteihin ja tehtäviin
-- Luotu uusi graafinen käyttöliittymä paremman käyttökokemuksen aikaansaamiseksi
+- Luotu uusi Tkinterillä toteutettu graafinen käyttöliittymä paremman käyttökokemuksen aikaansaamiseksi
+- Lisätty `gui`-invoke-tehtävä graafisen käyttöliittymän käynnistämiseen
+- Lisätty tehtävälistoihin leimojen näyttäminen graafisessa käyttöliittymässä
+- Päivitetty käyttöohje graafinen käyttöliittymä ensisijaisena käyttötapana
+- Päivitetty arkkitehtuuridokumentti vastaamaan nykyistä GUI-, service- ja repository-rakennetta
+- Päivitetty vaatimusmäärittely vastaamaan toteutuneita haku- ja käyttäjäsivutoimintoja
+- Lisätty testausdokumentti loppupalautusta varten
+- Rajattu käyttöliittymäkerrokset testikattavuusmittauksen ulkopuolelle, jotta kattavuus kuvaa sovelluslogiikan ja tietokantakerroksen testausta

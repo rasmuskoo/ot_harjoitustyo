@@ -129,6 +129,12 @@ Sovelluksen keskeiset entity-luokat ovat:
 
 Entity-luokat ovat yksinkertaisia dataluokkia. Sovelluslogiikka sijaitsee service-luokissa eikä entity-luokissa.
 
+## Rakenteeseen jääneet heikkoudet
+
+Graafinen käyttöliittymä on toteutettu yhdessä melko suuressa `src/gui/app.py`-tiedostossa. Ratkaisu oli loppupalautuksen aikataulu huomioiden käytännöllinen, mutta jatkokehityksessä näkymät kannattaisi jakaa erillisiin moduuleihin esimerkiksi kirjautumiselle, kotinäkymälle, projektinäkymälle ja käyttäjäsivulle.
+
+Käyttöliittymätestaus on pääosin manuaalista. Automaattiset testit keskittyvät sovelluslogiikkaan ja repository-kerrokseen, koska ne sisältävät suurimman osan sovelluksen säännöistä ja tietokantatoiminnoista. Graafisen käyttöliittymän kattavampi automaattinen testaus vaatisi erillistä Tkinter-käyttöliittymätestauksen ratkaisua.
+
 ## Sekvenssikaavio: tehtävän luonti
 
 ```mermaid
