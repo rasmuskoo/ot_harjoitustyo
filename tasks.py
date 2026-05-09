@@ -13,6 +13,15 @@ def start(context):
     subprocess.run([sys.executable, "-u", "-m", "src.main"], check=False)
 
 
+# Codex generated code begins
+@task
+def gui(context):
+    """Start the Tkinter application."""
+    del context
+    subprocess.run([sys.executable, "-u", "-m", "src.gui.app"], check=False)
+
+
+# Codex generated code ends
 @task
 def test(context):
     """Run the test suite with pytest."""
@@ -32,5 +41,5 @@ def lint(context):
     """Run pylint for application code."""
     context.run(
         "PYLINTHOME=.pylint.d pylint --rcfile=.pylintrc "
-        "src/main.py src/entities src/repositories src/services"
+        "src/main.py src/entities src/repositories src/services src/gui"
     )
