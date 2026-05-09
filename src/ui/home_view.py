@@ -16,6 +16,7 @@ from src.services.project_service import (
     ProjectCreationContext,
     ProjectDeleteError,
     ProjectDetails,
+    ProjectSearchError,
     ProjectService,
     ProjectTaskError,
 )
@@ -26,6 +27,7 @@ from src.services.task_service import (
     TaskCreationError,
     TaskDeleteError,
     TaskEditError,
+    TaskSearchError,
     TaskService,
 )
 
@@ -104,6 +106,10 @@ class HomeView:
                 self._handle_add_label_to_task(user.id, tasks)
                 continue
 
+            if command == "12":
+                self._handle_search(user.id)
+                continue
+
             if command != "1":
                 print("Unknown action.")
         return True
@@ -142,7 +148,7 @@ class HomeView:
         """Build command prompt and return selected command."""
         options = (
             "1=refresh, 2=sign out, 3=create task, 7=view completed tasks, "
-            "8=create project, 9=view projects, 10=create label, q=quit"
+            "8=create project, 9=view projects, 10=create label, 12=search, q=quit"
         )
         if tasks:
             options = (
@@ -433,6 +439,31 @@ class HomeView:
             print(f"Label added to task: {selected_task.title}")
         except LabelAssignmentError as error:
             print(f"Label assignment failed: {error}")
+
+    def _handle_search(self, user_id: int | None) -> None:
+        """Prompt keyword and show matching tasks and projects."""
+        query = input("Search keyword: ")
+        try:
+            tasks = self._task_service.search_tasks(user_id, query)
+            projects = self._project_service.search_projects(user_id, query)
+        except (TaskSearchError, ProjectSearchError) as error:
+            print(f"Search failed: {error}")
+            return
+
+        print("\nSearch Results")
+        print("Tasks:")
+        if not tasks:
+            print("No matching tasks.")
+        else:
+            for index, task in enumerate(tasks, start=1):
+                print(f"{index}. {self._format_task(task)}")
+
+        print("Projects:")
+        if not projects:
+            print("No matching projects.")
+        else:
+            for index, project in enumerate(projects, start=1):
+                print(f"{index}. {self._format_project(project)}")
 
     def _select_users(self, users: list[User]) -> list[int]:
         """Prompt user selection by comma-separated list."""

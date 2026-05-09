@@ -185,6 +185,29 @@ class TestTaskRepository(RepositoryTestCase):
         """Adding no participants should be a no-op."""
         self.task_repository.add_participants(999, [])
 
+    def test_search_tasks_for_user_matches_visible_tasks_only(self):
+        """Task search should match title and description for participant tasks."""
+        owner = self._create_user("owner@example.com")
+        other = self._create_user("other@example.com")
+        visible_title_match = self._create_task(owner.id, "Alpha task")
+        visible_description_match = self.task_repository.create_task(
+            Task(
+                title="Other",
+                description="Contains alpha keyword",
+                created_by_user_id=owner.id,
+                created_at="later",
+            )
+        )
+        self.task_repository.add_participant(visible_description_match.id, owner.id)
+        self._create_task(other.id, "Alpha hidden")
+
+        results = self.task_repository.search_tasks_for_user(owner.id, "alpha")
+
+        self.assertEqual(
+            {task.id for task in results},
+            {visible_title_match.id, visible_description_match.id},
+        )
+
 
 class TestProjectRepository(RepositoryTestCase):
     """Tests for project repository."""
@@ -222,6 +245,18 @@ class TestProjectRepository(RepositoryTestCase):
         self.project_repository.add_member(project.id, other.id)
 
         self.assertFalse(self.project_repository.delete_project_for_user(project.id, other.id))
+
+    def test_search_projects_for_user_matches_visible_projects_only(self):
+        """Project search should match names for member projects."""
+        owner = self._create_user("owner@example.com")
+        other = self._create_user("other@example.com")
+        visible_project = self._create_project(owner.id, "Alpha project")
+        self._create_project(owner.id, "Beta project")
+        self._create_project(other.id, "Alpha hidden")
+
+        results = self.project_repository.search_projects_for_user(owner.id, "alpha")
+
+        self.assertEqual([project.id for project in results], [visible_project.id])
 
 
 class TestLabelRepository(RepositoryTestCase):

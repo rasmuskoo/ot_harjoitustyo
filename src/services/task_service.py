@@ -26,6 +26,10 @@ class TaskDeleteError(Exception):
     """Raised when task deletion fails."""
 
 
+class TaskSearchError(Exception):
+    """Raised when task search validation fails."""
+
+
 @dataclass
 class TaskCreationContext:
     """Extra metadata for task creation.
@@ -224,3 +228,25 @@ class TaskService:
         was_deleted = self._task_repository.delete_task_for_user(task_id, user_id)
         if not was_deleted:
             raise TaskDeleteError("Task deletion failed.")
+
+    def search_tasks(self, user_id: int | None, query: str) -> list[Task]:
+        """Search tasks visible to a signed-in user.
+
+        Args:
+            user_id: Id of the current user.
+            query: Search keyword matched against task title and description.
+
+        Returns:
+            Matching user-visible tasks.
+
+        Raises:
+            TaskSearchError: If the user or query is missing.
+        """
+        if user_id is None:
+            raise TaskSearchError("Signed-in user is required to search tasks.")
+
+        normalized_query = query.strip()
+        if not normalized_query:
+            raise TaskSearchError("Search keyword is required.")
+
+        return self._task_repository.search_tasks_for_user(user_id, normalized_query)

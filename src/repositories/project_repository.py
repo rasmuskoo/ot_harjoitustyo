@@ -94,6 +94,43 @@ class ProjectRepository:
             for row in rows
         ]
 
+    def search_projects_for_user(self, user_id: int, query: str) -> list[Project]:
+        """Return user-visible projects matching name.
+
+        Args:
+            user_id: Id of the user whose visible projects are searched.
+            query: Search keyword matched against project name.
+
+        Returns:
+            Projects visible to the user whose name contains query.
+        """
+        search_pattern = f"%{query}%"
+        with get_database_connection() as connection:
+            cursor = connection.execute(
+                """
+                SELECT p.id, p.name, p.created_by_user_id, p.priority, p.due_date, p.created_at
+                FROM projects p
+                INNER JOIN project_members pm ON pm.project_id = p.id
+                WHERE pm.user_id = ?
+                  AND p.name LIKE ? COLLATE NOCASE
+                ORDER BY p.created_at DESC
+                """,
+                (user_id, search_pattern),
+            )
+            rows = cursor.fetchall()
+
+        return [
+            Project(
+                id=row[0],
+                name=row[1],
+                created_by_user_id=row[2],
+                priority=row[3],
+                due_date=row[4],
+                created_at=row[5],
+            )
+            for row in rows
+        ]
+
     def find_project_for_user(self, project_id: int, user_id: int) -> Project | None:
         """Return one project if the user is a member.
 

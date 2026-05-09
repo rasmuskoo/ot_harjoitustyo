@@ -9,6 +9,7 @@ from src.services.project_service import (
     ProjectCreationError,
     ProjectCreationContext,
     ProjectDeleteError,
+    ProjectSearchError,
     ProjectService,
     ProjectTaskError,
 )
@@ -102,6 +103,15 @@ class FakeProjectRepository:
         self._members.pop(project_id, None)
         del self._projects[project_id]
         return True
+
+    def search_projects_for_user(self, user_id: int, query: str) -> list[Project]:
+        """Return visible projects matching name."""
+        lowered_query = query.lower()
+        return [
+            project
+            for project in self.list_projects_for_user(user_id)
+            if lowered_query in project.name.lower()
+        ]
 
 
 class FakeTaskRepository:
@@ -280,6 +290,35 @@ class TestProjectService(unittest.TestCase):
 
         with self.assertRaises(ProjectDeleteError):
             self.project_service.delete_project(project.id, 2)
+
+    def test_search_projects_returns_matching_visible_projects(self):
+        """Project search should match only projects visible to the user."""
+        alpha_project = self.project_service.create_project(
+            "Alpha launch",
+            ProjectCreationContext(owner_user_id=1, member_user_ids=[]),
+        )
+        beta_project = self.project_service.create_project(
+            "Beta release",
+            ProjectCreationContext(owner_user_id=1, member_user_ids=[]),
+        )
+        hidden_project = self.project_service.create_project(
+            "Alpha hidden",
+            ProjectCreationContext(owner_user_id=2, member_user_ids=[]),
+        )
+
+        results = self.project_service.search_projects(1, "alpha")
+
+        self.assertEqual([project.id for project in results], [alpha_project.id])
+        self.assertNotIn(beta_project.id, [project.id for project in results])
+        self.assertNotIn(hidden_project.id, [project.id for project in results])
+
+    def test_search_projects_requires_signed_in_user_and_keyword(self):
+        """Project search should validate user and keyword."""
+        with self.assertRaises(ProjectSearchError):
+            self.project_service.search_projects(None, "alpha")
+
+        with self.assertRaises(ProjectSearchError):
+            self.project_service.search_projects(1, "   ")
 
 
 if __name__ == "__main__":

@@ -168,6 +168,58 @@ class TaskRepository:
             )
         return tasks
 
+    def search_tasks_for_user(self, user_id: int, query: str) -> list[Task]:
+        """Return user-visible tasks matching title or description.
+
+        Args:
+            user_id: Id of the user whose visible tasks are searched.
+            query: Search keyword matched against task title and description.
+
+        Returns:
+            Tasks visible to the user whose title or description contains query.
+        """
+        search_pattern = f"%{query}%"
+        with get_database_connection() as connection:
+            cursor = connection.execute(
+                """
+                SELECT
+                    t.id,
+                    t.title,
+                    t.description,
+                    t.created_by_user_id,
+                    t.created_at,
+                    t.priority,
+                    t.due_date,
+                    t.project_id,
+                    t.is_completed
+                FROM tasks t
+                INNER JOIN task_participants tp ON tp.task_id = t.id
+                WHERE tp.user_id = ?
+                  AND (
+                      t.title LIKE ? COLLATE NOCASE
+                      OR t.description LIKE ? COLLATE NOCASE
+                  )
+                ORDER BY t.created_at DESC
+                """,
+                (user_id, search_pattern, search_pattern),
+            )
+            rows = cursor.fetchall()
+
+        return [
+            Task(
+                id=row[0],
+                title=row[1],
+                description=row[2],
+                created_by_user_id=row[3],
+                created_at=row[4],
+                priority=row[5],
+                due_date=row[6],
+                project_id=row[7],
+                is_completed=bool(row[8]),
+            )
+            for row in rows
+        ]
+
     def find_task_for_user(self, task_id: int, user_id: int) -> Task | None:
         """Return one task if the user is a participant.
 

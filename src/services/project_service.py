@@ -25,6 +25,10 @@ class ProjectDeleteError(Exception):
     """Raised when project deletion fails."""
 
 
+class ProjectSearchError(Exception):
+    """Raised when project search validation fails."""
+
+
 @dataclass
 class ProjectDetails:
     """Project data shown in the project view.
@@ -130,6 +134,28 @@ class ProjectService:
         if user_id is None:
             return []
         return self._project_repository.list_projects_for_user(user_id)
+
+    def search_projects(self, user_id: int | None, query: str) -> list[Project]:
+        """Search projects visible to the current user.
+
+        Args:
+            user_id: Id of the current user.
+            query: Search keyword matched against project names.
+
+        Returns:
+            Matching user-visible projects.
+
+        Raises:
+            ProjectSearchError: If the user or query is missing.
+        """
+        if user_id is None:
+            raise ProjectSearchError("Signed-in user is required to search projects.")
+
+        normalized_query = query.strip()
+        if not normalized_query:
+            raise ProjectSearchError("Search keyword is required.")
+
+        return self._project_repository.search_projects_for_user(user_id, normalized_query)
 
     def get_project_details(self, project_id: int, user_id: int | None) -> ProjectDetails:
         """Return project, members, and tasks for a project member.

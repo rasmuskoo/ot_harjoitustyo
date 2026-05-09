@@ -9,6 +9,7 @@ from src.services.task_service import (
     TaskCreationError,
     TaskDeleteError,
     TaskEditError,
+    TaskSearchError,
     TaskService,
 )
 
@@ -111,6 +112,19 @@ class FakeTaskRepository:
         del self._tasks[task_id]
         self._participants.pop(task_id, None)
         return True
+
+    def search_tasks_for_user(self, user_id: int, query: str) -> list[Task]:
+        """Return visible tasks matching title or description."""
+        lowered_query = query.lower()
+        return [
+            task
+            for task_id, task in self._tasks.items()
+            if user_id in self._participants.get(task_id, set())
+            and (
+                lowered_query in task.title.lower()
+                or lowered_query in task.description.lower()
+            )
+        ]
 
 
 class TestTaskService(unittest.TestCase):
@@ -280,6 +294,38 @@ class TestTaskService(unittest.TestCase):
         """Deleting unknown task should fail."""
         with self.assertRaises(TaskDeleteError):
             self.task_service.delete_task(999, 1)
+
+    def test_search_tasks_returns_matching_visible_tasks(self):
+        """Task search should match visible tasks by title or description."""
+        alpha_task = self.task_service.create_task(
+            "Alpha plan",
+            "Implementation work",
+            TaskCreationContext(creator_user_id=1),
+        )
+        beta_task = self.task_service.create_task(
+            "Beta",
+            "Release checklist",
+            TaskCreationContext(creator_user_id=1),
+        )
+        hidden_task = self.task_service.create_task(
+            "Alpha hidden",
+            "Not visible",
+            TaskCreationContext(creator_user_id=2),
+        )
+
+        results = self.task_service.search_tasks(1, "alpha")
+
+        self.assertEqual([task.id for task in results], [alpha_task.id])
+        self.assertNotIn(beta_task.id, [task.id for task in results])
+        self.assertNotIn(hidden_task.id, [task.id for task in results])
+
+    def test_search_tasks_requires_signed_in_user_and_keyword(self):
+        """Task search should validate user and keyword."""
+        with self.assertRaises(TaskSearchError):
+            self.task_service.search_tasks(None, "alpha")
+
+        with self.assertRaises(TaskSearchError):
+            self.task_service.search_tasks(1, "   ")
 
 
 if __name__ == "__main__":
