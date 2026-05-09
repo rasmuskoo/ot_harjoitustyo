@@ -107,14 +107,17 @@ class TestUserRepository(RepositoryTestCase):
         created_user = self._create_user()
 
         found_user = self.user_repository.find_by_email("ada@example.com")
+        found_user_by_id = self.user_repository.find_by_id(created_user.id)
         users = self.user_repository.list_users()
 
         self.assertEqual(found_user.id, created_user.id)
+        self.assertEqual(found_user_by_id.email, "ada@example.com")
         self.assertEqual(users[0].email, "ada@example.com")
 
     def test_find_by_email_returns_none_when_user_missing(self):
         """Unknown email lookup should return none."""
         self.assertIsNone(self.user_repository.find_by_email("missing@example.com"))
+        self.assertIsNone(self.user_repository.find_by_id(999))
 
 
 class TestTaskRepository(RepositoryTestCase):
@@ -207,6 +210,17 @@ class TestTaskRepository(RepositoryTestCase):
             {task.id for task in results},
             {visible_title_match.id, visible_description_match.id},
         )
+
+    def test_list_all_tasks_for_user_includes_active_and_completed_tasks(self):
+        """All user tasks should include both active and completed participant tasks."""
+        user = self._create_user()
+        active_task = self._create_task(user.id, "Active")
+        completed_task = self._create_task(user.id, "Completed")
+        self.task_repository.complete_task_for_user(completed_task.id, user.id)
+
+        tasks = self.task_repository.list_all_tasks_for_user(user.id)
+
+        self.assertEqual({task.id for task in tasks}, {active_task.id, completed_task.id})
 
 
 class TestProjectRepository(RepositoryTestCase):

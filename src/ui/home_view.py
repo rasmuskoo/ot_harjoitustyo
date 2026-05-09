@@ -30,6 +30,11 @@ from src.services.task_service import (
     TaskSearchError,
     TaskService,
 )
+from src.services.user_profile_service import (
+    UserProfile,
+    UserProfileError,
+    UserProfileService,
+)
 
 
 class HomeView:
@@ -43,6 +48,7 @@ class HomeView:
         project_service: ProjectService,
         task_service: TaskService,
         label_service: LabelService,
+        user_profile_service: UserProfileService,
     ) -> None:
         """Create home view dependencies."""
         self._session_service = session_service
@@ -51,6 +57,7 @@ class HomeView:
         self._project_service = project_service
         self._task_service = task_service
         self._label_service = label_service
+        self._user_profile_service = user_profile_service
 
     def run(self) -> bool:
         """Run the home view until user signs out or quits the program."""
@@ -110,6 +117,14 @@ class HomeView:
                 self._handle_search(user.id)
                 continue
 
+            if command == "13":
+                self._handle_user_profile(user.id)
+                continue
+
+            if command == "14" and tasks:
+                self._handle_view_task(tasks)
+                continue
+
             if command != "1":
                 print("Unknown action.")
         return True
@@ -148,12 +163,13 @@ class HomeView:
         """Build command prompt and return selected command."""
         options = (
             "1=refresh, 2=sign out, 3=create task, 7=view completed tasks, "
-            "8=create project, 9=view projects, 10=create label, 12=search, q=quit"
+            "8=create project, 9=view projects, 10=create label, "
+            "12=search, 13=my page, q=quit"
         )
         if tasks:
             options = (
                 f"{options}, 4=edit task, 5=complete task, "
-                "6=delete task, 11=add label to task"
+                "6=delete task, 11=add label to task, 14=view task"
             )
         return input(f"Select action ({options}): ").strip()
 
@@ -314,7 +330,8 @@ class HomeView:
 
         self._render_project(details)
         action = input(
-            "Select action (1=back, 2=create task, 3=add existing task, 4=delete project): "
+            "Select action (1=back, 2=create task, 3=add existing task, "
+            "4=delete project, 5=view creator): "
         ).strip()
         if action == "2":
             self._handle_create_task_for_project(details, user_id)
@@ -322,6 +339,8 @@ class HomeView:
             self._handle_add_existing_task_to_project(details, user_id)
         elif action == "4":
             self._handle_delete_project(details, user_id)
+        elif action == "5":
+            self._handle_user_profile(details.project.created_by_user_id)
 
     def _render_project(self, details: ProjectDetails) -> None:
         """Print project details, members, and tasks."""
@@ -464,6 +483,55 @@ class HomeView:
         else:
             for index, project in enumerate(projects, start=1):
                 print(f"{index}. {self._format_project(project)}")
+
+    def _handle_user_profile(self, user_id: int | None) -> None:
+        """Load and render a user's profile page."""
+        try:
+            profile = self._user_profile_service.get_profile(user_id)
+        except UserProfileError as error:
+            print(f"User page failed: {error}")
+            return
+
+        self._render_user_profile(profile)
+
+    def _handle_view_task(self, tasks: list[Task]) -> None:
+        """Prompt task selection and show selected task details."""
+        selected_task = self._select_task(tasks, "view")
+        if selected_task is None:
+            return
+
+        self._render_task_details(selected_task)
+        action = input("Select action (1=back, 2=view creator): ").strip()
+        if action == "2":
+            self._handle_user_profile(selected_task.created_by_user_id)
+
+    def _render_task_details(self, task: Task) -> None:
+        """Print task details."""
+        print(f"\nTask: {task.title}")
+        print(f"Description: {task.description}")
+        print(f"Priority: {task.priority}")
+        print(f"Due date: {task.due_date or 'none'}")
+        print(f"Status: {'completed' if task.is_completed else 'active'}")
+
+    def _render_user_profile(self, profile: UserProfile) -> None:
+        """Print user profile with project and task participation."""
+        user = profile.user
+        print(f"\nUser Page: {user.first_name} {user.last_name}")
+        print(f"Email: {user.email}")
+
+        print("Projects:")
+        if not profile.projects:
+            print("No project memberships.")
+        else:
+            for index, project in enumerate(profile.projects, start=1):
+                print(f"{index}. {self._format_project(project)}")
+
+        print("Tasks:")
+        if not profile.tasks:
+            print("No task participation.")
+        else:
+            for index, task in enumerate(profile.tasks, start=1):
+                print(f"{index}. {self._format_task(task)}")
 
     def _select_users(self, users: list[User]) -> list[int]:
         """Prompt user selection by comma-separated list."""

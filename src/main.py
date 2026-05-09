@@ -10,6 +10,7 @@ from src.services.label_service import LabelService
 from src.services.project_service import ProjectService
 from src.services.session_service import SessionService
 from src.services.task_service import TaskService
+from src.services.user_profile_service import UserProfileService
 from src.ui.home_view import HomeView
 from src.ui.sign_in_view import SignInView
 from src.ui.sign_up_view import SignUpView
@@ -30,6 +31,11 @@ def _build_views() -> tuple[SignInView, HomeView]:
     task_service = TaskService(task_repository)
     project_service = ProjectService(project_repository, task_repository)
     label_service = LabelService(label_repository, task_repository)
+    user_profile_service = UserProfileService(
+        user_repository,
+        project_repository,
+        task_repository,
+    )
 
     sign_up_view = SignUpView(auth_service)
     sign_in_view = SignInView(auth_service, session_service, sign_up_view)
@@ -40,6 +46,7 @@ def _build_views() -> tuple[SignInView, HomeView]:
         project_service,
         task_service,
         label_service,
+        user_profile_service,
     )
     return sign_in_view, home_view
 

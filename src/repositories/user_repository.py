@@ -73,6 +73,38 @@ class UserRepository:
             created_at=row[5],
         )
 
+    def find_by_id(self, user_id: int) -> User | None:
+        """Find one user by database id.
+
+        Args:
+            user_id: User id used for lookup.
+
+        Returns:
+            Matching user, or None when no user exists.
+        """
+        with get_database_connection() as connection:
+            cursor = connection.execute(
+                """
+                SELECT id, first_name, last_name, email, password_hash, created_at
+                FROM users
+                WHERE id = ?
+                """,
+                (user_id,),
+            )
+            row = cursor.fetchone()
+
+        if row is None:
+            return None
+
+        return User(
+            id=row[0],
+            first_name=row[1],
+            last_name=row[2],
+            email=row[3],
+            password_hash=row[4],
+            created_at=row[5],
+        )
+
     def list_users(self) -> list[User]:
         """Return all registered users ordered by name.
 
