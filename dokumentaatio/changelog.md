@@ -56,3 +56,4 @@
 - Päivitetty vaatimusmäärittely vastaamaan toteutuneita haku- ja käyttäjäsivutoimintoja
 - Lisätty testausdokumentti loppupalautusta varten
 - Rajattu käyttöliittymäkerrokset testikattavuusmittauksen ulkopuolelle, jotta kattavuus kuvaa sovelluslogiikan ja tietokantakerroksen testausta
+- Parannettu rekisteröitymisen käyttäjäkokemusta lisäämällä sähköposti- ja salasanavaatimukset näkyviin sekä sallimalla uuden yrityksen virheellisen syötteen jälkeen

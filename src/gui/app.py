@@ -1,7 +1,7 @@
 # Codex generated code begins
 """Tkinter user interface for TaskBoard."""
 
-# pylint: disable=line-too-long,too-many-ancestors,too-many-instance-attributes
+# pylint: disable=line-too-long,too-many-lines,too-many-ancestors,too-many-instance-attributes
 # pylint: disable=too-many-locals,too-many-statements
 
 import tkinter as tk
@@ -198,17 +198,29 @@ class SignUpView(ttk.Frame):
             row=0,
             column=0,
             columnspan=2,
-            pady=(0, 20),
+            pady=(0, 8),
+        )
+        ttk.Label(
+            panel,
+            text="Email must be in format name@example.com.\n"
+            "Password must be at least 8 characters long.",
+            justify=tk.LEFT,
+        ).grid(
+            row=1,
+            column=0,
+            columnspan=2,
+            sticky=tk.W,
+            pady=(0, 16),
         )
 
         fields = (
             ("First name", self.first_name_var, False),
             ("Last name", self.last_name_var, False),
-            ("Email", self.email_var, False),
-            ("Password", self.password_var, True),
+            ("Email (name@example.com)", self.email_var, False),
+            ("Password (at least 8 characters)", self.password_var, True),
             ("Confirm password", self.confirm_password_var, True),
         )
-        for row, (label, variable, secret) in enumerate(fields, start=1):
+        for row, (label, variable, secret) in enumerate(fields, start=2):
             ttk.Label(panel, text=label).grid(row=row, column=0, sticky=tk.W, pady=4)
             ttk.Entry(panel, textvariable=variable, show="*" if secret else "", width=36).grid(
                 row=row,
@@ -217,14 +229,14 @@ class SignUpView(ttk.Frame):
             )
 
         ttk.Button(panel, text="Register", command=self._register_account).grid(
-            row=6,
+            row=7,
             column=0,
             columnspan=2,
             sticky=tk.EW,
             pady=(16, 6),
         )
         ttk.Button(panel, text="Back to sign in", command=self.app.show_sign_in).grid(
-            row=7,
+            row=8,
             column=0,
             columnspan=2,
             sticky=tk.EW,
@@ -242,7 +254,10 @@ class SignUpView(ttk.Frame):
         try:
             self.app.auth_service.register(registration)
         except RegistrationError as error:
-            messagebox.showerror("Registration failed", str(error))
+            messagebox.showerror(
+                "Registration failed",
+                f"{error}\n\nPlease check the highlighted requirements and try again.",
+            )
             return
 
         messagebox.showinfo("Account created", "You can now sign in.")
