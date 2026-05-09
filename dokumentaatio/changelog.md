@@ -43,3 +43,9 @@
     - Lisätty uusia testejä palvelu- ja repository-kerroksiin
 - Lisätty docstring dokumentaatiota
 - Lisätty käyttöohje-tiedosto
+
+## Viikko 7
+
+- Lisätty hakutoiminto josta voi hakea tehtäviä ja projekteja
+- Lisätty käyttäjäsivut joista näkee käyttäjän osallistumisen projekteihin ja tehtäviin
+- Luotu uusi graafinen käyttöliittymä paremman käyttökokemuksen aikaansaamiseksi

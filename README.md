@@ -2,7 +2,7 @@
 
 ## TaskBoard Desktop
 
-TaskBoard on Pythonilla toteutettu komentorivisovellus tehtävien ja projektien hallintaan. Sovelluksessa voi rekisteröityä, kirjautua sisään, luoda ja hallita tehtäviä sekä luoda projekteja ja liittää käyttäjiä ja tehtäviä niihin.
+TaskBoard on Pythonilla toteutettu sovellus tehtävien ja projektien hallintaan. Sovelluksessa voi rekisteröityä, kirjautua sisään, luoda ja hallita tehtäviä sekä luoda projekteja ja liittää käyttäjiä ja tehtäviä niihin.
 
 ## Dokumentaatio
 
@@ -22,9 +22,13 @@ Asenna riippuvuudet komennolla:
 
 `poetry install`
 
-## Komentorivitoiminnot
+## Komentoriviltä suoritettavat komennot
 
-Ohjelman suorittaminen:
+Ohjelman suorittaminen (ensisijainen):
+
+`poetry run invoke gui`
+
+Voit suorittaa ohjelman myös ilman graafista käyttöliittymää (toissijainen):
 
 `poetry run invoke start`
 

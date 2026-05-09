@@ -25,5 +25,8 @@
 |  | 1h | Testauksen coveragen nostaminen viikon vaatimustason yläpuolelle |
 |  | 1h | Docstring dokumentaation lisääminen |
 |  | 0,5h | Käyttöohje ja dokumentaation täydennys |
+| 9.5.2026 | 1h | Hakutoiminnon tekeminen |
+|  | 1h | käyttäjäsivujen luonti |
+|  | 1h | Uusi graafinen käyttöliittymä |
 | --- | --- | --- |
 | Yhteensä | 27,5h |  |
